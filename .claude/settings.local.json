@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew --version)",
+      "Bash(./gradlew :app:tasks --no-daemon)",
+      "Bash(./gradlew :app:assembleDebug --no-daemon)"
+    ]
+  }
+}
