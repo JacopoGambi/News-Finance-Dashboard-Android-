@@ -5,7 +5,6 @@ import androidx.room.PrimaryKey
 
 /**
  * Entità Room per gli articoli salvati nei preferiti.
- * Schema completo definito nello Step 7.
  */
 @Entity(tableName = "articles")
 data class ArticleEntity(
@@ -14,7 +13,6 @@ data class ArticleEntity(
 
 /**
  * Entità Room per le crypto in watchlist con eventuale soglia di alert.
- * Schema completo definito nello Step 7.
  */
 @Entity(tableName = "cryptos")
 data class CryptoEntity(

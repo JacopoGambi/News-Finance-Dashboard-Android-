@@ -1,3 +1,3 @@
 package com.example.newsfinance.ui.home
 
-// Placeholder: HomeScreen + HomeViewModel (Step 10).
+// Placeholder: HomeScreen + HomeViewModel.

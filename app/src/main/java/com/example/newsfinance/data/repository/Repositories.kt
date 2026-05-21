@@ -11,7 +11,6 @@ import javax.inject.Inject
 
 /**
  * Implementazione di NewsRepository.
- * Logica e metodi definiti nello Step 6.
  */
 class NewsRepositoryImpl @Inject constructor(
     private val newsApiService: NewsApiService
@@ -19,7 +18,6 @@ class NewsRepositoryImpl @Inject constructor(
 
 /**
  * Implementazione di CryptoRepository.
- * Logica e metodi definiti nello Step 6.
  */
 class CryptoRepositoryImpl @Inject constructor(
     private val coinGeckoService: CoinGeckoService
@@ -27,7 +25,6 @@ class CryptoRepositoryImpl @Inject constructor(
 
 /**
  * Implementazione di FavoritesRepository (Room).
- * Logica e metodi definiti nello Step 8.
  */
 class FavoritesRepositoryImpl @Inject constructor(
     private val articleDao: ArticleDao,
