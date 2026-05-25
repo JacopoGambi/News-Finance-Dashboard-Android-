@@ -29,12 +29,16 @@ class FavoritesRepositoryImpl @Inject constructor(
         articleDao.getAllFavoriteArticles()
             .map { list -> list.map { it.toDomain() } }
 
-    override suspend fun addFavoriteArticle(article: Article) = withContext(Dispatchers.IO) {
-        articleDao.insertArticle(article.toEntity())
+    override suspend fun addFavoriteArticle(article: Article) {
+        withContext(Dispatchers.IO) {
+            articleDao.insertArticle(article.toEntity())
+        }
     }
 
-    override suspend fun removeFavoriteArticle(article: Article) = withContext(Dispatchers.IO) {
-        articleDao.deleteArticle(article.toEntity())
+    override suspend fun removeFavoriteArticle(article: Article) {
+        withContext(Dispatchers.IO) {
+            articleDao.deleteArticle(article.toEntity())
+        }
     }
 
     override fun isArticleFavorite(url: String): Flow<Boolean> =
@@ -44,18 +48,23 @@ class FavoritesRepositoryImpl @Inject constructor(
         cryptoDao.getAllWatchlistCryptos()
             .map { list -> list.map { it.toDomain() } }
 
-    override suspend fun addToWatchlist(crypto: Crypto) = withContext(Dispatchers.IO) {
-        cryptoDao.insertCrypto(crypto.toEntity())
+    override suspend fun addToWatchlist(crypto: Crypto) {
+        withContext(Dispatchers.IO) {
+            cryptoDao.insertCrypto(crypto.toEntity())
+        }
     }
 
-    override suspend fun removeFromWatchlist(crypto: Crypto) = withContext(Dispatchers.IO) {
-        cryptoDao.deleteCrypto(crypto.toEntity())
+    override suspend fun removeFromWatchlist(crypto: Crypto) {
+        withContext(Dispatchers.IO) {
+            cryptoDao.deleteCrypto(crypto.toEntity())
+        }
     }
 
-    override suspend fun updateCryptoAlertThreshold(id: String, threshold: Double) =
+    override suspend fun updateCryptoAlertThreshold(id: String, threshold: Double) {
         withContext(Dispatchers.IO) {
             cryptoDao.updateAlertThreshold(id, threshold)
         }
+    }
 
     override suspend fun getCryptosWithAlerts(): List<Crypto> = withContext(Dispatchers.IO) {
         cryptoDao.getCryptosWithAlerts().map { it.toDomain() }
