@@ -6,8 +6,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +34,11 @@ import java.util.Locale
 @Composable
 fun CryptoCard(
     crypto: Crypto,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    vsCurrency: String = "usd",
+    isWatchlisted: Boolean = false,
+    onToggleWatchlist: (() -> Unit)? = null,
+    onBellClick: (() -> Unit)? = null
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -64,7 +75,7 @@ fun CryptoCard(
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = formatCryptoPrice(crypto.currentPrice),
+                    text = formatCryptoPrice(crypto.currentPrice, vsCurrency),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
@@ -78,11 +89,51 @@ fun CryptoCard(
                     )
                 }
             }
+            if (onToggleWatchlist != null || onBellClick != null) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (onToggleWatchlist != null) {
+                        IconButton(
+                            onClick = onToggleWatchlist,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isWatchlisted) Icons.Filled.Star
+                                              else Icons.Filled.StarBorder,
+                                contentDescription = if (isWatchlisted) "Rimuovi dalla watchlist"
+                                                     else "Aggiungi alla watchlist",
+                                tint = if (isWatchlisted) Color(0xFFFFC107)
+                                       else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    if (onBellClick != null) {
+                        IconButton(
+                            onClick = onBellClick,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (crypto.alertThreshold != null)
+                                                  Icons.Filled.Notifications
+                                              else Icons.Filled.NotificationsNone,
+                                contentDescription = "Imposta soglia di prezzo",
+                                tint = if (crypto.alertThreshold != null)
+                                           MaterialTheme.colorScheme.primary
+                                       else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
-private fun formatCryptoPrice(price: Double?): String {
+private fun formatCryptoPrice(price: Double?, vsCurrency: String): String {
     if (price == null) return "N/A"
-    return NumberFormat.getCurrencyInstance(Locale.US).format(price)
+    val nf = if (vsCurrency.equals("eur", ignoreCase = true)) {
+        NumberFormat.getCurrencyInstance(Locale.GERMANY)
+    } else {
+        NumberFormat.getCurrencyInstance(Locale.US)
+    }
+    return nf.format(price)
 }
