@@ -9,11 +9,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -29,7 +35,9 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ArticleCard(
     article: Article,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isFavorite: Boolean = false,
+    onToggleFavorite: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
 
@@ -48,7 +56,8 @@ fun ArticleCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top
         ) {
             if (article.imageUrl != null) {
                 AsyncImage(
@@ -82,6 +91,21 @@ fun ArticleCard(
                         text = formatArticleDate(date),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            if (onToggleFavorite != null) {
+                IconButton(
+                    onClick = onToggleFavorite,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Filled.Bookmark
+                                      else Icons.Outlined.Bookmark,
+                        contentDescription = if (isFavorite) "Rimuovi dai preferiti"
+                                            else "Aggiungi ai preferiti",
+                        tint = if (isFavorite) MaterialTheme.colorScheme.primary
+                               else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

@@ -10,6 +10,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.newsfinance.ui.home.HomeScreen
+import com.example.newsfinance.ui.news.NewsScreen
 
 @Composable
 fun NavGraph(
@@ -25,9 +26,7 @@ fun NavGraph(
             HomeScreen(modifier = Modifier.fillMaxSize())
         }
         composable(Screen.News.route) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "News")
-            }
+            NewsScreen(modifier = Modifier.fillMaxSize())
         }
         composable(Screen.Markets.route) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
