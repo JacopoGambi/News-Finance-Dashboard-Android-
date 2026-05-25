@@ -15,21 +15,10 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
-/**
- * Qualifier per distinguere le due istanze Retrofit (NewsAPI e CoinGecko).
- */
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class NewsRetrofit
+@Qualifier @Retention(AnnotationRetention.BINARY) annotation class NewsRetrofit
+@Qualifier @Retention(AnnotationRetention.BINARY) annotation class CoinGeckoRetrofit
+@Qualifier @Retention(AnnotationRetention.BINARY) annotation class CoinGeckoOkHttp
 
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class CoinGeckoRetrofit
-
-/**
- * Modulo Hilt per il layer di rete.
- * Fornisce OkHttpClient condiviso, due Retrofit (NewsAPI / CoinGecko) e i relativi service.
- */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
@@ -37,16 +26,39 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor =
-        HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
+        HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
 
+    // Client condiviso — usato da NewsAPI
     @Provides
     @Singleton
     fun provideOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .build()
+
+    // Client dedicato a CoinGecko — aggiunge l'header Demo API key
+    @Provides
+    @Singleton
+    @CoinGeckoOkHttp
+    fun provideCoinGeckoOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .addInterceptor { chain ->
+            val apiKey = Constants.COINGECKO_API_KEY
+            val request = if (apiKey.isNotBlank()) {
+                chain.request().newBuilder()
+                    .header("x-cg-demo-api-key", apiKey)
+                    .build()
+            } else {
+                chain.request()
+            }
+            chain.proceed(request)
+        }
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
@@ -65,7 +77,7 @@ object NetworkModule {
     @Provides
     @Singleton
     @CoinGeckoRetrofit
-    fun provideCoinGeckoRetrofit(okHttpClient: OkHttpClient): Retrofit =
+    fun provideCoinGeckoRetrofit(@CoinGeckoOkHttp okHttpClient: OkHttpClient): Retrofit =
         Retrofit.Builder()
             .baseUrl(Constants.COINGECKO_BASE_URL)
             .client(okHttpClient)

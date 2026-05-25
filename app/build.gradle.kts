@@ -1,9 +1,17 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+}
+
+val localProperties = Properties().apply {
+    val localFile = rootProject.file("local.properties")
+    if (localFile.exists()) load(FileInputStream(localFile))
 }
 
 android {
@@ -18,6 +26,17 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String", "NEWS_API_KEY",
+            "\"${localProperties.getProperty("NEWS_API_KEY") ?: ""}\""
+        )
+        buildConfigField(
+            "String", "COINGECKO_API_KEY",
+            "\"${localProperties.getProperty("COINGECKO_API_KEY") ?: ""}\""
+        )
+        buildConfigField("String", "NEWS_API_BASE_URL",    "\"https://newsapi.org/v2/\"")
+        buildConfigField("String", "COINGECKO_BASE_URL",  "\"https://api.coingecko.com/api/v3/\"")
     }
 
     buildTypes {
@@ -41,6 +60,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
