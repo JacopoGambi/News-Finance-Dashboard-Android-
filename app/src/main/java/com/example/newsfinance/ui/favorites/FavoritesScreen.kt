@@ -58,7 +58,7 @@ fun FavoritesScreen(
             Tab(
                 selected = selectedTab == 0,
                 onClick = { selectedTab = 0 },
-                text = { Text("Articoli") }
+                text = { Text("Notizie") }
             )
             Tab(
                 selected = selectedTab == 1,
@@ -74,6 +74,7 @@ fun FavoritesScreen(
             )
             1 -> CryptosTab(
                 cryptos = uiState.watchlistCryptos,
+                vsCurrency = uiState.preferredCurrency,
                 onRemove = viewModel::onRemoveCrypto
             )
         }
@@ -114,6 +115,7 @@ private fun ArticlesTab(
 @Composable
 private fun CryptosTab(
     cryptos: List<Crypto>,
+    vsCurrency: String,
     onRemove: (Crypto) -> Unit
 ) {
     if (cryptos.isEmpty()) {
@@ -129,7 +131,12 @@ private fun CryptosTab(
         ) {
             items(cryptos, key = { it.id }) { crypto ->
                 SwipeToDismissItem(onDismiss = { onRemove(crypto) }) {
-                    CryptoCard(crypto = crypto)
+                    CryptoCard(
+                        crypto = crypto,
+                        vsCurrency = vsCurrency,
+                        isWatchlisted = true,
+                        onToggleWatchlist = { onRemove(crypto) }
+                    )
                 }
             }
         }

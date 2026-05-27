@@ -2,6 +2,7 @@ package com.example.newsfinance.ui.favorites
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.newsfinance.data.local.UserPreferencesDataStore
 import com.example.newsfinance.domain.model.Article
 import com.example.newsfinance.domain.model.Crypto
 import com.example.newsfinance.domain.repository.FavoritesRepository
@@ -15,19 +16,26 @@ import javax.inject.Inject
 
 data class FavoritesUiState(
     val favoriteArticles: List<Article> = emptyList(),
-    val watchlistCryptos: List<Crypto> = emptyList()
+    val watchlistCryptos: List<Crypto> = emptyList(),
+    val preferredCurrency: String = "usd"
 )
 
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
-    private val favoritesRepository: FavoritesRepository
+    private val favoritesRepository: FavoritesRepository,
+    prefsStore: UserPreferencesDataStore
 ) : ViewModel() {
 
     val uiState: StateFlow<FavoritesUiState> = combine(
         favoritesRepository.getFavoriteArticles(),
-        favoritesRepository.getWatchlistCryptos()
-    ) { articles, cryptos ->
-        FavoritesUiState(favoriteArticles = articles, watchlistCryptos = cryptos)
+        favoritesRepository.getWatchlistCryptos(),
+        prefsStore.preferences
+    ) { articles, cryptos, prefs ->
+        FavoritesUiState(
+            favoriteArticles = articles,
+            watchlistCryptos = cryptos,
+            preferredCurrency = prefs.preferredCurrency
+        )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

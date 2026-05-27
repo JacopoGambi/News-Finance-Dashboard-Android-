@@ -122,6 +122,14 @@ fun CryptoCard(
                             )
                         }
                     }
+                    if (crypto.alertThreshold != null) {
+                        Text(
+                            text = formatCryptoPrice(crypto.alertThreshold, vsCurrency),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            maxLines = 1
+                        )
+                    }
                 }
             }
         }
