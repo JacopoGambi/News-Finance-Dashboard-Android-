@@ -2,16 +2,17 @@ package com.example.newsfinance.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.newsfinance.data.local.UserPreferencesDataStore
 import com.example.newsfinance.domain.model.Article
 import com.example.newsfinance.domain.model.Crypto
-import com.example.newsfinance.domain.usecase.GetHomeDataUseCase
+import com.example.newsfinance.domain.usecase.GetCryptoMarketsUseCase
+import com.example.newsfinance.domain.usecase.GetLocalNewsUseCase
 import com.example.newsfinance.util.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,56 +20,44 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val articles: List<Article> = emptyList(),
     val cryptos: List<Crypto> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val detectedCountry: String? = null
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getHomeDataUseCase: GetHomeDataUseCase,
-    private val prefsStore: UserPreferencesDataStore
+    private val getLocalNewsUseCase: GetLocalNewsUseCase,
+    private val getCryptoMarketsUseCase: GetCryptoMarketsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    private val _currentCountry = MutableStateFlow("us")
-
-    // True quando il paese è stato impostato dalla posizione GPS; in tal caso
-    // le modifiche alle preferenze non sovrascrivono l'override di sessione.
-    private var locationCountryActive = false
-
+    private var detectedCountry: String? = null
     private var loadJob: Job? = null
 
     init {
-        // Aggiorna il paese dalle preferenze utente (solo se non c'è override GPS attivo)
-        viewModelScope.launch {
-            prefsStore.preferences.collect { prefs ->
-                if (!locationCountryActive) {
-                    _currentCountry.value = prefs.preferredCountry
-                }
-            }
-        }
-        // Ricarica i dati ogni volta che il paese corrente cambia
-        viewModelScope.launch {
-            _currentCountry.collect { country ->
-                loadData(country)
-            }
-        }
+        loadData()
     }
 
     fun refresh() {
-        loadData(_currentCountry.value)
+        loadData()
     }
 
-    fun setUserCountry(countryCode: String) {
-        locationCountryActive = true
-        _currentCountry.value = countryCode
+    fun setDetectedCountry(countryCode: String) {
+        detectedCountry = countryCode
+        _uiState.value = _uiState.value.copy(detectedCountry = countryCode)
     }
 
-    private fun loadData(country: String) {
+    private fun loadData() {
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            getHomeDataUseCase(country).collect { (newsResult, cryptoResult) ->
+            combine(
+                getLocalNewsUseCase(NEWS_COUNTRY),
+                getCryptoMarketsUseCase("usd")
+            ) { newsResult, cryptoResult ->
+                Pair(newsResult, cryptoResult)
+            }.collect { (newsResult, cryptoResult) ->
                 val isLoading =
                     newsResult is Result.Loading || cryptoResult is Result.Loading
                 val articles = (newsResult as? Result.Success)?.data.orEmpty()
@@ -82,9 +71,14 @@ class HomeViewModel @Inject constructor(
                     isLoading = isLoading,
                     articles = articles,
                     cryptos = cryptos,
-                    error = error
+                    error = error,
+                    detectedCountry = detectedCountry
                 )
             }
         }
+    }
+
+    private companion object {
+        const val NEWS_COUNTRY = "us"
     }
 }

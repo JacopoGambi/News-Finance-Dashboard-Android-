@@ -29,14 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-private val countries = listOf(
-    "us" to "Stati Uniti",
-    "it" to "Italia",
-    "gb" to "Regno Unito",
-    "fr" to "Francia",
-    "de" to "Germania"
-)
-
 private val currencies = listOf(
     "usd" to "USD",
     "eur" to "EUR"
@@ -63,18 +55,6 @@ fun SettingsScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // --- Sezione News ---
-        SectionHeader("Notizie")
-
-        SettingsDropdown(
-            label = "Paese",
-            options = countries,
-            selectedKey = prefs.preferredCountry,
-            onSelected = viewModel::onCountryChanged
-        )
-
-        HorizontalDivider()
-
         // --- Sezione Mercati ---
         SectionHeader("Mercati")
 

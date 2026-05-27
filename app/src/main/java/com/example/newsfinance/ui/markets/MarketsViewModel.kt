@@ -2,6 +2,7 @@ package com.example.newsfinance.ui.markets
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.newsfinance.data.local.UserPreferencesDataStore
 import com.example.newsfinance.domain.model.Crypto
 import com.example.newsfinance.domain.repository.FavoritesRepository
 import com.example.newsfinance.domain.usecase.GetCryptoMarketsUseCase
@@ -28,10 +29,18 @@ data class MarketsUiState(
 @HiltViewModel
 class MarketsViewModel @Inject constructor(
     private val getMarketsUseCase: GetCryptoMarketsUseCase,
-    private val favoritesRepository: FavoritesRepository
+    private val favoritesRepository: FavoritesRepository,
+    private val prefsStore: UserPreferencesDataStore
 ) : ViewModel() {
 
     private val _selectedCurrency = MutableStateFlow("usd")
+
+    init {
+        viewModelScope.launch {
+            val prefs = prefsStore.preferences
+            prefs.collect { _selectedCurrency.value = it.preferredCurrency }
+        }
+    }
     // Incrementato a ogni refresh per forzare il ricaricamento con la stessa valuta
     private val _refreshTick = MutableStateFlow(0)
 

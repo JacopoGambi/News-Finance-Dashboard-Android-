@@ -1,10 +1,8 @@
 package com.example.newsfinance.ui.home
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.location.Geocoder
 import android.net.Uri
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
@@ -17,10 +15,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,15 +49,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.newsfinance.ui.components.ArticleCard
 import com.example.newsfinance.ui.components.CryptoCard
+import com.example.newsfinance.util.LocationHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
-import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -83,9 +81,9 @@ fun HomeScreen(
     // Recupera il paese dalla posizione quando il permesso è concesso
     LaunchedEffect(locationPermissionState.status) {
         if (locationPermissionState.status.isGranted) {
-            val countryCode = fetchCountryCode(context)
+            val countryCode = LocationHelper.getCountryCode(context)
             if (countryCode != null) {
-                viewModel.setUserCountry(countryCode)
+                viewModel.setDetectedCountry(countryCode)
             }
         }
     }
@@ -122,11 +120,31 @@ fun HomeScreen(
                         }
                     }
                     item {
-                        Text(
-                            text = "Ultime Notizie",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Ultime Notizie",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            uiState.detectedCountry?.let { detected ->
+                                AssistChip(
+                                    onClick = {},
+                                    label = { Text(detected.uppercase()) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.LocationOn,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(AssistChipDefaults.IconSize)
+                                        )
+                                    }
+                                )
+                            }
+                        }
                     }
                     items(
                         items = uiState.articles.take(5),
@@ -206,17 +224,3 @@ private fun LocationPermissionBanner(context: Context) {
     }
 }
 
-@SuppressLint("MissingPermission")
-private suspend fun fetchCountryCode(context: Context): String? = withContext(Dispatchers.IO) {
-    try {
-        if (!Geocoder.isPresent()) return@withContext null
-        val client = LocationServices.getFusedLocationProviderClient(context)
-        val location = client.lastLocation.await() ?: return@withContext null
-        @Suppress("DEPRECATION")
-        val addresses = Geocoder(context, Locale.getDefault())
-            .getFromLocation(location.latitude, location.longitude, 1)
-        addresses?.firstOrNull()?.countryCode?.lowercase()
-    } catch (_: Exception) {
-        null
-    }
-}
