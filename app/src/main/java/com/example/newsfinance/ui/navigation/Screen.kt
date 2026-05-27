@@ -1,5 +1,6 @@
 package com.example.newsfinance.ui.navigation
 
+import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
@@ -18,4 +19,15 @@ sealed class Screen(
     data object Markets : Screen("markets", "Mercati", Icons.Filled.ShowChart)
     data object Favorites : Screen("favorites", "Preferiti", Icons.Filled.Favorite)
     data object Settings : Screen("settings", "Impostazioni", Icons.Filled.Settings)
+
+    data object CryptoDetail : Screen(
+        route = "crypto_detail/{cryptoId}/{currency}",
+        label = "Dettaglio",
+        icon = Icons.Filled.ShowChart
+    ) {
+        fun createRoute(cryptoId: String, currency: String) =
+            "crypto_detail/${Uri.encode(cryptoId)}/$currency"
+        const val ARG_ID = "cryptoId"
+        const val ARG_CURRENCY = "currency"
+    }
 }

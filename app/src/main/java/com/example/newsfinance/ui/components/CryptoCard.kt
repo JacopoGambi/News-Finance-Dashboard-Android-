@@ -38,10 +38,13 @@ fun CryptoCard(
     vsCurrency: String = "usd",
     isWatchlisted: Boolean = false,
     onToggleWatchlist: (() -> Unit)? = null,
-    onBellClick: (() -> Unit)? = null
+    onBellClick: (() -> Unit)? = null,
+    onClick: (() -> Unit)? = null
 ) {
     Card(
+        onClick = { onClick?.invoke() },
         modifier = modifier.fillMaxWidth(),
+        enabled = onClick != null,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(

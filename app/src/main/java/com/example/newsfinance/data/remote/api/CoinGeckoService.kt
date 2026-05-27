@@ -1,7 +1,9 @@
 package com.example.newsfinance.data.remote.api
 
 import com.example.newsfinance.data.remote.dto.CryptoDto
+import com.example.newsfinance.data.remote.dto.MarketChartDto
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface CoinGeckoService {
@@ -18,4 +20,11 @@ interface CoinGeckoService {
         @Query("vs_currency") vsCurrency: String,
         @Query("ids") ids: String
     ): List<CryptoDto>
+
+    @GET("coins/{id}/market_chart")
+    suspend fun getMarketChart(
+        @Path("id") id: String,
+        @Query("vs_currency") vsCurrency: String,
+        @Query("days") days: Int
+    ): MarketChartDto
 }

@@ -4,10 +4,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.newsfinance.ui.home.HomeScreen
+import androidx.navigation.navArgument
 import com.example.newsfinance.ui.favorites.FavoritesScreen
+import com.example.newsfinance.ui.home.HomeScreen
+import com.example.newsfinance.ui.markets.CryptoDetailScreen
 import com.example.newsfinance.ui.markets.MarketsScreen
 import com.example.newsfinance.ui.news.NewsScreen
 import com.example.newsfinance.ui.settings.SettingsScreen
@@ -29,13 +32,30 @@ fun NavGraph(
             NewsScreen(modifier = Modifier.fillMaxSize())
         }
         composable(Screen.Markets.route) {
-            MarketsScreen(modifier = Modifier.fillMaxSize())
+            MarketsScreen(
+                modifier = Modifier.fillMaxSize(),
+                onCryptoClick = { cryptoId, currency ->
+                    navController.navigate(Screen.CryptoDetail.createRoute(cryptoId, currency))
+                }
+            )
         }
         composable(Screen.Favorites.route) {
             FavoritesScreen(modifier = Modifier.fillMaxSize())
         }
         composable(Screen.Settings.route) {
             SettingsScreen(modifier = Modifier.fillMaxSize())
+        }
+        composable(
+            route = Screen.CryptoDetail.route,
+            arguments = listOf(
+                navArgument(Screen.CryptoDetail.ARG_ID) { type = NavType.StringType },
+                navArgument(Screen.CryptoDetail.ARG_CURRENCY) { type = NavType.StringType }
+            )
+        ) {
+            CryptoDetailScreen(
+                onBack = { navController.popBackStack() },
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }

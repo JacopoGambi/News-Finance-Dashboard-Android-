@@ -47,6 +47,7 @@ import java.util.Locale
 @Composable
 fun MarketsScreen(
     modifier: Modifier = Modifier,
+    onCryptoClick: (cryptoId: String, currency: String) -> Unit = { _, _ -> },
     viewModel: MarketsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -180,7 +181,8 @@ fun MarketsScreen(
                                             if (it % 1.0 == 0.0) it.toLong().toString() else it.toString()
                                         } ?: ""
                                         dialogCrypto = crypto
-                                    }
+                                    },
+                                    onClick = { onCryptoClick(crypto.id, uiState.selectedCurrency) }
                                 )
                             }
                         }
