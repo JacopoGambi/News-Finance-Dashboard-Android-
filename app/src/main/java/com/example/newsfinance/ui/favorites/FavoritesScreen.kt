@@ -48,6 +48,7 @@ import com.example.newsfinance.ui.components.CryptoCard
 @Composable
 fun FavoritesScreen(
     modifier: Modifier = Modifier,
+    onCryptoClick: (cryptoId: String, currency: String) -> Unit = { _, _ -> },
     viewModel: FavoritesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -75,7 +76,8 @@ fun FavoritesScreen(
             1 -> CryptosTab(
                 cryptos = uiState.watchlistCryptos,
                 vsCurrency = uiState.preferredCurrency,
-                onRemove = viewModel::onRemoveCrypto
+                onRemove = viewModel::onRemoveCrypto,
+                onCryptoClick = onCryptoClick
             )
         }
     }
@@ -116,7 +118,8 @@ private fun ArticlesTab(
 private fun CryptosTab(
     cryptos: List<Crypto>,
     vsCurrency: String,
-    onRemove: (Crypto) -> Unit
+    onRemove: (Crypto) -> Unit,
+    onCryptoClick: (cryptoId: String, currency: String) -> Unit
 ) {
     if (cryptos.isEmpty()) {
         EmptyState(
@@ -135,7 +138,8 @@ private fun CryptosTab(
                         crypto = crypto,
                         vsCurrency = vsCurrency,
                         isWatchlisted = true,
-                        onToggleWatchlist = { onRemove(crypto) }
+                        onToggleWatchlist = { onRemove(crypto) },
+                        onClick = { onCryptoClick(crypto.id, vsCurrency) }
                     )
                 }
             }

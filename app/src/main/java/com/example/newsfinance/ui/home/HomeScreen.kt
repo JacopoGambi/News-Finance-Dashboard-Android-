@@ -59,6 +59,7 @@ import com.google.accompanist.permissions.shouldShowRationale
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
+    onCryptoClick: (cryptoId: String, currency: String) -> Unit = { _, _ -> },
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -164,7 +165,10 @@ fun HomeScreen(
                         items = uiState.cryptos,
                         key = { it.id }
                     ) { crypto ->
-                        CryptoCard(crypto = crypto)
+                        CryptoCard(
+                            crypto = crypto,
+                            onClick = { onCryptoClick(crypto.id, "usd") }
+                        )
                     }
                 }
             }

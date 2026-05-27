@@ -26,7 +26,12 @@ fun NavGraph(
         modifier = modifier
     ) {
         composable(Screen.Home.route) {
-            HomeScreen(modifier = Modifier.fillMaxSize())
+            HomeScreen(
+                modifier = Modifier.fillMaxSize(),
+                onCryptoClick = { cryptoId, currency ->
+                    navController.navigate(Screen.CryptoDetail.createRoute(cryptoId, currency))
+                }
+            )
         }
         composable(Screen.News.route) {
             NewsScreen(modifier = Modifier.fillMaxSize())
@@ -40,7 +45,12 @@ fun NavGraph(
             )
         }
         composable(Screen.Favorites.route) {
-            FavoritesScreen(modifier = Modifier.fillMaxSize())
+            FavoritesScreen(
+                modifier = Modifier.fillMaxSize(),
+                onCryptoClick = { cryptoId, currency ->
+                    navController.navigate(Screen.CryptoDetail.createRoute(cryptoId, currency))
+                }
+            )
         }
         composable(Screen.Settings.route) {
             SettingsScreen(modifier = Modifier.fillMaxSize())

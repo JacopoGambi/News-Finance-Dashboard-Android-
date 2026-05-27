@@ -41,12 +41,9 @@ fun CryptoCard(
     onBellClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) {
-    Card(
-        onClick = { onClick?.invoke() },
-        modifier = modifier.fillMaxWidth(),
-        enabled = onClick != null,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
+    val cardModifier = modifier.fillMaxWidth()
+    val cardElevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    val cardContent: @Composable () -> Unit = {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -136,6 +133,19 @@ fun CryptoCard(
                 }
             }
         }
+    }
+
+    if (onClick != null) {
+        Card(
+            onClick = onClick,
+            modifier = cardModifier,
+            elevation = cardElevation
+        ) { cardContent() }
+    } else {
+        Card(
+            modifier = cardModifier,
+            elevation = cardElevation
+        ) { cardContent() }
     }
 }
 
