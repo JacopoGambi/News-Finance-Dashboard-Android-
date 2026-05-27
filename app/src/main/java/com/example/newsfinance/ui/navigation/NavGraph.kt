@@ -1,10 +1,7 @@
 package com.example.newsfinance.ui.navigation
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -13,6 +10,7 @@ import com.example.newsfinance.ui.home.HomeScreen
 import com.example.newsfinance.ui.favorites.FavoritesScreen
 import com.example.newsfinance.ui.markets.MarketsScreen
 import com.example.newsfinance.ui.news.NewsScreen
+import com.example.newsfinance.ui.settings.SettingsScreen
 
 @Composable
 fun NavGraph(
@@ -37,9 +35,7 @@ fun NavGraph(
             FavoritesScreen(modifier = Modifier.fillMaxSize())
         }
         composable(Screen.Settings.route) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "Impostazioni")
-            }
+            SettingsScreen(modifier = Modifier.fillMaxSize())
         }
     }
 }
