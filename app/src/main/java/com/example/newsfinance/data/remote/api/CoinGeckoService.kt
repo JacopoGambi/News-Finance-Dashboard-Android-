@@ -12,4 +12,10 @@ interface CoinGeckoService {
         @Query("per_page") perPage: Int,
         @Query("page") page: Int
     ): List<CryptoDto>
+
+    @GET("coins/markets")
+    suspend fun getMarketsByIds(
+        @Query("vs_currency") vsCurrency: String,
+        @Query("ids") ids: String
+    ): List<CryptoDto>
 }
