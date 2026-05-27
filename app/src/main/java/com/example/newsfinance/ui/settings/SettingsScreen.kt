@@ -1,5 +1,6 @@
 package com.example.newsfinance.ui.settings
 
+import android.Manifest
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 
 private val currencies = listOf(
     "usd" to "USD",
@@ -40,13 +44,18 @@ private val intervals = listOf(
     60 to "60 minuti"
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val prefs by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Su API < 33 POST_NOTIFICATIONS non è un permesso runtime: status sarà sempre Granted
+    val notificationsPermissionState = rememberPermissionState(
+        Manifest.permission.POST_NOTIFICATIONS
+    )
 
     Column(
         modifier = modifier
@@ -78,7 +87,12 @@ fun SettingsScreen(
             Text("Abilita notifiche", style = MaterialTheme.typography.bodyLarge)
             Switch(
                 checked = prefs.notificationsEnabled,
-                onCheckedChange = viewModel::onNotificationsToggled
+                onCheckedChange = { enabled ->
+                    if (enabled && !notificationsPermissionState.status.isGranted) {
+                        notificationsPermissionState.launchPermissionRequest()
+                    }
+                    viewModel.onNotificationsToggled(enabled)
+                }
             )
         }
 

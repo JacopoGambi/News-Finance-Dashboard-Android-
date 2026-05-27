@@ -43,7 +43,6 @@ class PriceAlertWorker @AssistedInject constructor(
                 if (currentPrice >= threshold) {
                     notificationHelper.sendPriceAlert(
                         cryptoName = crypto.name,
-                        cryptoSymbol = crypto.symbol,
                         currentPrice = currentPrice,
                         threshold = threshold
                     )

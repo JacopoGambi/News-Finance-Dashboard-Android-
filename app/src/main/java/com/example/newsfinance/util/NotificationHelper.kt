@@ -17,14 +17,18 @@ import javax.inject.Singleton
 class NotificationHelper @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    init {
+        createNotificationChannel()
+    }
+
     fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 Constants.NOTIFICATION_CHANNEL_PRICE_ALERTS,
-                "Avvisi Prezzo",
+                "Price Alerts",
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Notifiche quando una crypto supera la soglia impostata"
+                description = "Notifications when a crypto crosses your alert threshold"
             }
             context.getSystemService(NotificationManager::class.java)
                 .createNotificationChannel(channel)
@@ -33,7 +37,6 @@ class NotificationHelper @Inject constructor(
 
     fun sendPriceAlert(
         cryptoName: String,
-        cryptoSymbol: String,
         currentPrice: Double,
         threshold: Double
     ) {
@@ -47,9 +50,9 @@ class NotificationHelper @Inject constructor(
             Constants.NOTIFICATION_CHANNEL_PRICE_ALERTS
         )
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("$cryptoName ($cryptoSymbol) ha superato la soglia")
+            .setContentTitle("Price Alert: $cryptoName")
             .setContentText(
-                "Prezzo: ${"%.2f".format(currentPrice)} — Soglia: ${"%.2f".format(threshold)}"
+                "Current price $${"%.2f".format(currentPrice)} has crossed your alert threshold of $${"%.2f".format(threshold)}"
             )
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
