@@ -1,34 +1,63 @@
 package com.example.newsfinance.ui.home
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.location.Geocoder
+import android.net.Uri
+import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.newsfinance.ui.components.ArticleCard
 import com.example.newsfinance.ui.components.CryptoCard
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
+import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -36,14 +65,41 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    val locationPermissionState = rememberPermissionState(
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    )
+    var permissionRequested by rememberSaveable { mutableStateOf(false) }
+
+    // Richiede il permesso alla prima visualizzazione se non ancora concesso
+    LaunchedEffect(Unit) {
+        if (!locationPermissionState.status.isGranted) {
+            permissionRequested = true
+            locationPermissionState.launchPermissionRequest()
+        }
+    }
+
+    // Recupera il paese dalla posizione quando il permesso è concesso
+    LaunchedEffect(locationPermissionState.status) {
+        if (locationPermissionState.status.isGranted) {
+            val countryCode = fetchCountryCode(context)
+            if (countryCode != null) {
+                viewModel.setUserCountry(countryCode)
+            }
+        }
+    }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { snackbarHostState.showSnackbar(it) }
     }
 
-    // Caricamento iniziale: nessun dato ancora disponibile
+    // Rifiuto permanente: permesso richiesto almeno una volta e non più proponibile
+    val isPermanentlyDenied = permissionRequested &&
+        !locationPermissionState.status.isGranted &&
+        !locationPermissionState.status.shouldShowRationale
+
     val isInitialLoad = uiState.isLoading && uiState.articles.isEmpty() && uiState.cryptos.isEmpty()
-    // Pull-to-refresh: dati già presenti, si sta aggiornando
     val isRefreshing = uiState.isLoading && !isInitialLoad
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -60,6 +116,11 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
+                    if (isPermanentlyDenied) {
+                        item {
+                            LocationPermissionBanner(context = context)
+                        }
+                    }
                     item {
                         Text(
                             text = "Ultime Notizie",
@@ -95,5 +156,67 @@ fun HomeScreen(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+    }
+}
+
+@Composable
+private fun LocationPermissionBanner(context: Context) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
+            ) {
+                Text(
+                    text = "Abilita la posizione",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = "La posizione permette di mostrare notizie locali più rilevanti.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+            TextButton(
+                onClick = {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+                    context.startActivity(intent)
+                }
+            ) {
+                Text("Impostazioni")
+            }
+        }
+    }
+}
+
+@SuppressLint("MissingPermission")
+private suspend fun fetchCountryCode(context: Context): String? = withContext(Dispatchers.IO) {
+    try {
+        if (!Geocoder.isPresent()) return@withContext null
+        val client = LocationServices.getFusedLocationProviderClient(context)
+        val location = client.lastLocation.await() ?: return@withContext null
+        @Suppress("DEPRECATION")
+        val addresses = Geocoder(context, Locale.getDefault())
+            .getFromLocation(location.latitude, location.longitude, 1)
+        addresses?.firstOrNull()?.countryCode?.lowercase()
+    } catch (_: Exception) {
+        null
     }
 }

@@ -2,6 +2,7 @@ package com.example.newsfinance.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.newsfinance.data.local.UserPreferencesDataStore
 import com.example.newsfinance.domain.model.Article
 import com.example.newsfinance.domain.model.Crypto
 import com.example.newsfinance.domain.usecase.GetHomeDataUseCase
@@ -23,26 +24,51 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getHomeDataUseCase: GetHomeDataUseCase
+    private val getHomeDataUseCase: GetHomeDataUseCase,
+    private val prefsStore: UserPreferencesDataStore
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private val _currentCountry = MutableStateFlow("us")
+
+    // True quando il paese è stato impostato dalla posizione GPS; in tal caso
+    // le modifiche alle preferenze non sovrascrivono l'override di sessione.
+    private var locationCountryActive = false
+
     private var loadJob: Job? = null
 
     init {
-        loadData()
+        // Aggiorna il paese dalle preferenze utente (solo se non c'è override GPS attivo)
+        viewModelScope.launch {
+            prefsStore.preferences.collect { prefs ->
+                if (!locationCountryActive) {
+                    _currentCountry.value = prefs.preferredCountry
+                }
+            }
+        }
+        // Ricarica i dati ogni volta che il paese corrente cambia
+        viewModelScope.launch {
+            _currentCountry.collect { country ->
+                loadData(country)
+            }
+        }
     }
 
     fun refresh() {
-        loadData()
+        loadData(_currentCountry.value)
     }
 
-    private fun loadData() {
+    fun setUserCountry(countryCode: String) {
+        locationCountryActive = true
+        _currentCountry.value = countryCode
+    }
+
+    private fun loadData(country: String) {
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            getHomeDataUseCase().collect { (newsResult, cryptoResult) ->
+            getHomeDataUseCase(country).collect { (newsResult, cryptoResult) ->
                 val isLoading =
                     newsResult is Result.Loading || cryptoResult is Result.Loading
                 val articles = (newsResult as? Result.Success)?.data.orEmpty()

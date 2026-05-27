@@ -13,9 +13,9 @@ class GetHomeDataUseCase @Inject constructor(
     private val newsRepository: NewsRepository,
     private val cryptoRepository: CryptoRepository
 ) {
-    operator fun invoke(): Flow<Pair<Result<List<Article>>, Result<List<Crypto>>>> =
+    operator fun invoke(country: String): Flow<Pair<Result<List<Article>>, Result<List<Crypto>>>> =
         combine(
-            newsRepository.getTopHeadlines(country = "us", category = null),
+            newsRepository.getTopHeadlines(country = country, category = null),
             cryptoRepository.getMarkets(vsCurrency = "usd")
         ) { newsResult, cryptoResult ->
             Pair(newsResult, cryptoResult)
