@@ -25,10 +25,4 @@ interface CryptoDao {
 
     @Query("SELECT * FROM cryptos WHERE id = :id")
     suspend fun getCryptoById(id: String): CryptoEntity?
-
-    @Query("UPDATE cryptos SET alertThreshold = :threshold WHERE id = :id")
-    suspend fun updateAlertThreshold(id: String, threshold: Double)
-
-    @Query("SELECT * FROM cryptos WHERE alertThreshold IS NOT NULL")
-    suspend fun getCryptosWithAlerts(): List<CryptoEntity>
 }

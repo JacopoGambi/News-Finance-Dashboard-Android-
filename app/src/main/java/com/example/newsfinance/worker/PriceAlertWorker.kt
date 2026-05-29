@@ -5,7 +5,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.newsfinance.data.remote.api.CoinGeckoService
-import com.example.newsfinance.domain.repository.FavoritesRepository
+import com.example.newsfinance.domain.repository.AlertRepository
 import com.example.newsfinance.util.Constants
 import com.example.newsfinance.util.NotificationHelper
 import dagger.assisted.Assisted
@@ -18,16 +18,16 @@ class PriceAlertWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
     private val coinGeckoService: CoinGeckoService,
-    private val favoritesRepository: FavoritesRepository,
+    private val alertRepository: AlertRepository,
     private val notificationHelper: NotificationHelper
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            val cryptosWithAlerts = favoritesRepository.getCryptosWithAlerts()
-            if (cryptosWithAlerts.isEmpty()) return@withContext Result.success()
+            val alerts = alertRepository.getAllAlerts()
+            if (alerts.isEmpty()) return@withContext Result.success()
 
-            val ids = cryptosWithAlerts.joinToString(",") { it.id }
+            val ids = alerts.map { it.cryptoId }.distinct().joinToString(",")
             val fetchedPrices = coinGeckoService.getMarketsByIds(
                 vsCurrency = Constants.DEFAULT_VS_CURRENCY,
                 ids = ids
@@ -37,14 +37,20 @@ class PriceAlertWorker @AssistedInject constructor(
                 (dto.id ?: "") to (dto.currentPrice ?: 0.0)
             }
 
-            cryptosWithAlerts.forEach { crypto ->
-                val threshold = crypto.alertThreshold ?: return@forEach
-                val currentPrice = priceMap[crypto.id] ?: return@forEach
-                if (currentPrice >= threshold) {
+            alerts.forEach { alert ->
+                val currentPrice = priceMap[alert.cryptoId] ?: return@forEach
+                val crossed = if (alert.above) {
+                    currentPrice >= alert.threshold
+                } else {
+                    currentPrice <= alert.threshold
+                }
+                if (crossed) {
                     notificationHelper.sendPriceAlert(
-                        cryptoName = crypto.name,
+                        notificationId = alert.id.toInt(),
+                        cryptoName = alert.cryptoName,
                         currentPrice = currentPrice,
-                        threshold = threshold
+                        threshold = alert.threshold,
+                        above = alert.above
                     )
                 }
             }

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.newsfinance.data.local.UserPreferencesDataStore
 import com.example.newsfinance.domain.model.Article
 import com.example.newsfinance.domain.model.Crypto
+import com.example.newsfinance.domain.repository.AlertRepository
 import com.example.newsfinance.domain.repository.FavoritesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,6 +24,7 @@ data class FavoritesUiState(
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
     private val favoritesRepository: FavoritesRepository,
+    private val alertRepository: AlertRepository,
     prefsStore: UserPreferencesDataStore
 ) : ViewModel() {
 
@@ -48,5 +50,11 @@ class FavoritesViewModel @Inject constructor(
 
     fun onRemoveCrypto(crypto: Crypto) {
         viewModelScope.launch { favoritesRepository.removeFromWatchlist(crypto) }
+    }
+
+    fun onAddAlert(crypto: Crypto, threshold: Double, above: Boolean) {
+        viewModelScope.launch {
+            alertRepository.addAlert(crypto.id, crypto.name, threshold, above)
+        }
     }
 }

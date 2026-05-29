@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.newsfinance.data.local.UserPreferencesDataStore
 import com.example.newsfinance.domain.model.Crypto
+import com.example.newsfinance.domain.repository.AlertRepository
 import com.example.newsfinance.domain.repository.FavoritesRepository
 import com.example.newsfinance.domain.usecase.GetCryptoMarketsUseCase
 import com.example.newsfinance.util.Result
@@ -30,6 +31,7 @@ data class MarketsUiState(
 class MarketsViewModel @Inject constructor(
     private val getMarketsUseCase: GetCryptoMarketsUseCase,
     private val favoritesRepository: FavoritesRepository,
+    private val alertRepository: AlertRepository,
     private val prefsStore: UserPreferencesDataStore
 ) : ViewModel() {
 
@@ -98,14 +100,9 @@ class MarketsViewModel @Inject constructor(
         }
     }
 
-    fun onSetAlertThreshold(cryptoId: String, threshold: Double) {
+    fun onAddAlert(crypto: Crypto, threshold: Double, above: Boolean) {
         viewModelScope.launch {
-            // Aggiunge automaticamente alla watchlist se non ancora presente
-            if (cryptoId !in _watchlistIds.value) {
-                val crypto = uiState.value.cryptos.find { it.id == cryptoId } ?: return@launch
-                favoritesRepository.addToWatchlist(crypto)
-            }
-            favoritesRepository.updateCryptoAlertThreshold(cryptoId, threshold)
+            alertRepository.addAlert(crypto.id, crypto.name, threshold, above)
         }
     }
 }

@@ -9,6 +9,5 @@ data class Crypto(
     val marketCap: Double?,
     val marketCapRank: Int?,
     val priceChangePercentage24h: Double?,
-    val lastUpdated: String?,
-    val alertThreshold: Double? = null
+    val lastUpdated: String?
 )

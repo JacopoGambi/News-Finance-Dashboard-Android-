@@ -1,11 +1,14 @@
 package com.example.newsfinance.data.repository
 
+import com.example.newsfinance.data.local.dao.AlertDao
 import com.example.newsfinance.data.local.dao.ArticleDao
 import com.example.newsfinance.data.local.dao.CryptoDao
 import com.example.newsfinance.data.local.entity.toDomain
 import com.example.newsfinance.data.local.entity.toEntity
 import com.example.newsfinance.domain.model.Article
 import com.example.newsfinance.domain.model.Crypto
+import com.example.newsfinance.domain.model.CryptoAlert
+import com.example.newsfinance.domain.repository.AlertRepository
 import com.example.newsfinance.domain.repository.FavoritesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -59,14 +62,43 @@ class FavoritesRepositoryImpl @Inject constructor(
             cryptoDao.deleteCrypto(crypto.toEntity())
         }
     }
+}
 
-    override suspend fun updateCryptoAlertThreshold(id: String, threshold: Double) {
+/**
+ * Implementazione di AlertRepository basata su AlertDao.
+ */
+@Singleton
+class AlertRepositoryImpl @Inject constructor(
+    private val alertDao: AlertDao
+) : AlertRepository {
+
+    override fun getAlertsForCrypto(cryptoId: String): Flow<List<CryptoAlert>> =
+        alertDao.getAlertsForCrypto(cryptoId)
+            .map { list -> list.map { it.toDomain() } }
+
+    override suspend fun addAlert(
+        cryptoId: String,
+        cryptoName: String,
+        threshold: Double,
+        above: Boolean
+    ) {
         withContext(Dispatchers.IO) {
-            cryptoDao.updateAlertThreshold(id, threshold)
+            alertDao.insertAlert(
+                CryptoAlert(
+                    cryptoId = cryptoId,
+                    cryptoName = cryptoName,
+                    threshold = threshold,
+                    above = above
+                ).toEntity()
+            )
         }
     }
 
-    override suspend fun getCryptosWithAlerts(): List<Crypto> = withContext(Dispatchers.IO) {
-        cryptoDao.getCryptosWithAlerts().map { it.toDomain() }
+    override suspend fun removeAlert(id: Long) {
+        withContext(Dispatchers.IO) { alertDao.deleteAlert(id) }
+    }
+
+    override suspend fun getAllAlerts(): List<CryptoAlert> = withContext(Dispatchers.IO) {
+        alertDao.getAllAlerts().map { it.toDomain() }
     }
 }

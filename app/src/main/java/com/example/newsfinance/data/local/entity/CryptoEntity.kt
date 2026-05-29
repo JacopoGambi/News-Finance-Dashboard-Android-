@@ -6,7 +6,6 @@ import com.example.newsfinance.domain.model.Crypto
 
 /**
  * Entità Room per le crypto in watchlist.
- * @property alertThreshold soglia opzionale per la notifica di superamento prezzo.
  */
 @Entity(tableName = "cryptos")
 data class CryptoEntity(
@@ -18,8 +17,7 @@ data class CryptoEntity(
     val marketCap: Double?,
     val marketCapRank: Int?,
     val priceChangePercentage24h: Double?,
-    val lastUpdated: String?,
-    val alertThreshold: Double?
+    val lastUpdated: String?
 )
 
 fun CryptoEntity.toDomain(): Crypto = Crypto(
@@ -31,8 +29,7 @@ fun CryptoEntity.toDomain(): Crypto = Crypto(
     marketCap = marketCap,
     marketCapRank = marketCapRank,
     priceChangePercentage24h = priceChangePercentage24h,
-    lastUpdated = lastUpdated,
-    alertThreshold = alertThreshold
+    lastUpdated = lastUpdated
 )
 
 fun Crypto.toEntity(): CryptoEntity = CryptoEntity(
@@ -44,6 +41,5 @@ fun Crypto.toEntity(): CryptoEntity = CryptoEntity(
     marketCap = marketCap,
     marketCapRank = marketCapRank,
     priceChangePercentage24h = priceChangePercentage24h,
-    lastUpdated = lastUpdated,
-    alertThreshold = alertThreshold
+    lastUpdated = lastUpdated
 )

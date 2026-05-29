@@ -2,6 +2,7 @@ package com.example.newsfinance.domain.repository
 
 import com.example.newsfinance.domain.model.Article
 import com.example.newsfinance.domain.model.Crypto
+import com.example.newsfinance.domain.model.CryptoAlert
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -23,8 +24,19 @@ interface FavoritesRepository {
     suspend fun addToWatchlist(crypto: Crypto)
 
     suspend fun removeFromWatchlist(crypto: Crypto)
+}
 
-    suspend fun updateCryptoAlertThreshold(id: String, threshold: Double)
+/**
+ * Repository per gli alert di prezzo. Ogni crypto può avere più alert
+ * (al rialzo o al ribasso), indipendenti dalla watchlist.
+ */
+interface AlertRepository {
 
-    suspend fun getCryptosWithAlerts(): List<Crypto>
+    fun getAlertsForCrypto(cryptoId: String): Flow<List<CryptoAlert>>
+
+    suspend fun addAlert(cryptoId: String, cryptoName: String, threshold: Double, above: Boolean)
+
+    suspend fun removeAlert(id: Long)
+
+    suspend fun getAllAlerts(): List<CryptoAlert>
 }

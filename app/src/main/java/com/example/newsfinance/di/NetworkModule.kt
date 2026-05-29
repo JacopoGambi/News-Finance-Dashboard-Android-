@@ -23,6 +23,9 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    private const val MAX_RATE_LIMIT_RETRIES = 3
+    private const val MAX_RATE_LIMIT_BACKOFF_MS = 10_000L
+
     @Provides
     @Singleton
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor =
@@ -41,6 +44,7 @@ object NetworkModule {
         .build()
 
     // Client dedicato a CoinGecko — aggiunge l'header Demo API key
+    // e ritenta in caso di rate limit (HTTP 429) con backoff.
     @Provides
     @Singleton
     @CoinGeckoOkHttp
@@ -48,6 +52,26 @@ object NetworkModule {
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .addInterceptor { chain ->
+            // Ritenta sul 429 rispettando l'header Retry-After (o backoff crescente)
+            var response = chain.proceed(chain.request())
+            var attempt = 0
+            while (response.code == 429 && attempt < MAX_RATE_LIMIT_RETRIES) {
+                val retryAfterSec = response.header("Retry-After")?.toLongOrNull()
+                response.close()
+                val backoffMs = ((retryAfterSec ?: (attempt + 1) * 2L) * 1000L)
+                    .coerceAtMost(MAX_RATE_LIMIT_BACKOFF_MS)
+                try {
+                    Thread.sleep(backoffMs)
+                } catch (_: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    break
+                }
+                attempt++
+                response = chain.proceed(chain.request())
+            }
+            response
+        }
         .addInterceptor { chain ->
             val apiKey = Constants.COINGECKO_API_KEY
             val request = if (apiKey.isNotBlank()) {

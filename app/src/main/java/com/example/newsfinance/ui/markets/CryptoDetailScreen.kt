@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -94,7 +95,7 @@ fun CryptoDetailScreen(
             Spacer(modifier = Modifier.height(8.dp))
             if (uiState.currentPrice != null) {
                 Text(
-                    text = formatPrice(uiState.currentPrice, "usd"),
+                    text = formatPrice(uiState.currentPrice, uiState.currency),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -163,6 +164,43 @@ fun CryptoDetailScreen(
                         points = uiState.chartPoints,
                         modifier = Modifier.fillMaxSize()
                     )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Lista degli alert di prezzo impostati su questa crypto
+            Text(
+                text = "Alert impostati",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            if (uiState.alerts.isEmpty()) {
+                Text(
+                    text = "Nessun alert impostato",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                uiState.alerts.forEach { alert ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${if (alert.above) "▲ Sopra" else "▼ Sotto"} ${formatPrice(alert.threshold, uiState.currency)}",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        IconButton(onClick = { viewModel.onRemoveAlert(alert.id) }) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = "Elimina alert",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
                 }
             }
 

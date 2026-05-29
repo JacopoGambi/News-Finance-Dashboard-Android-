@@ -3,6 +3,7 @@ package com.example.newsfinance.di
 import android.content.Context
 import androidx.room.Room
 import com.example.newsfinance.data.local.AppDatabase
+import com.example.newsfinance.data.local.dao.AlertDao
 import com.example.newsfinance.data.local.dao.ArticleDao
 import com.example.newsfinance.data.local.dao.CryptoDao
 import com.example.newsfinance.util.Constants
@@ -29,11 +30,16 @@ object DatabaseModule {
         context,
         AppDatabase::class.java,
         Constants.DATABASE_NAME
-    ).build()
+    )
+        .fallbackToDestructiveMigration()
+        .build()
 
     @Provides
     fun provideArticleDao(db: AppDatabase): ArticleDao = db.articleDao()
 
     @Provides
     fun provideCryptoDao(db: AppDatabase): CryptoDao = db.cryptoDao()
+
+    @Provides
+    fun provideAlertDao(db: AppDatabase): AlertDao = db.alertDao()
 }

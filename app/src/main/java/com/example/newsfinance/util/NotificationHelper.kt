@@ -36,15 +36,18 @@ class NotificationHelper @Inject constructor(
     }
 
     fun sendPriceAlert(
+        notificationId: Int,
         cryptoName: String,
         currentPrice: Double,
-        threshold: Double
+        threshold: Double,
+        above: Boolean = true
     ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
             != PackageManager.PERMISSION_GRANTED
         ) return
 
+        val direction = if (above) "risen above" else "dropped below"
         val notification = NotificationCompat.Builder(
             context,
             Constants.NOTIFICATION_CHANNEL_PRICE_ALERTS
@@ -52,12 +55,12 @@ class NotificationHelper @Inject constructor(
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("Price Alert: $cryptoName")
             .setContentText(
-                "Current price $${"%.2f".format(currentPrice)} has crossed your alert threshold of $${"%.2f".format(threshold)}"
+                "Current price $${"%.2f".format(currentPrice)} has $direction your alert threshold of $${"%.2f".format(threshold)}"
             )
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .build()
 
-        NotificationManagerCompat.from(context).notify(cryptoName.hashCode(), notification)
+        NotificationManagerCompat.from(context).notify(notificationId, notification)
     }
 }

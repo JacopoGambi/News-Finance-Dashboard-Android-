@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -112,23 +111,11 @@ fun CryptoCard(
                             modifier = Modifier.size(36.dp)
                         ) {
                             Icon(
-                                imageVector = if (crypto.alertThreshold != null)
-                                                  Icons.Filled.Notifications
-                                              else Icons.Filled.NotificationsNone,
-                                contentDescription = "Imposta soglia di prezzo",
-                                tint = if (crypto.alertThreshold != null)
-                                           MaterialTheme.colorScheme.primary
-                                       else MaterialTheme.colorScheme.onSurfaceVariant
+                                imageVector = Icons.Filled.NotificationsNone,
+                                contentDescription = "Aggiungi alert di prezzo",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                    }
-                    if (crypto.alertThreshold != null) {
-                        Text(
-                            text = formatCryptoPrice(crypto.alertThreshold, vsCurrency),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            maxLines = 1
-                        )
                     }
                 }
             }

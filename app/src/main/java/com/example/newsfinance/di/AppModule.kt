@@ -1,8 +1,10 @@
 package com.example.newsfinance.di
 
+import com.example.newsfinance.data.repository.AlertRepositoryImpl
 import com.example.newsfinance.data.repository.CryptoRepositoryImpl
 import com.example.newsfinance.data.repository.FavoritesRepositoryImpl
 import com.example.newsfinance.data.repository.NewsRepositoryImpl
+import com.example.newsfinance.domain.repository.AlertRepository
 import com.example.newsfinance.domain.repository.CryptoRepository
 import com.example.newsfinance.domain.repository.FavoritesRepository
 import com.example.newsfinance.domain.repository.NewsRepository
@@ -31,4 +33,8 @@ abstract class AppModule {
     @Binds
     @Singleton
     abstract fun bindFavoritesRepository(impl: FavoritesRepositoryImpl): FavoritesRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAlertRepository(impl: AlertRepositoryImpl): AlertRepository
 }

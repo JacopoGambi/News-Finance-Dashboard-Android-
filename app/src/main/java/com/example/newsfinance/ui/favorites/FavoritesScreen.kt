@@ -30,7 +30,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +43,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.newsfinance.domain.model.Article
 import com.example.newsfinance.domain.model.Crypto
+import com.example.newsfinance.ui.components.AddAlertDialog
 import com.example.newsfinance.ui.components.ArticleCard
 import com.example.newsfinance.ui.components.CryptoCard
 
@@ -52,7 +55,18 @@ fun FavoritesScreen(
     viewModel: FavoritesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var selectedTab by remember { mutableIntStateOf(0) }
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    var dialogCrypto by remember { mutableStateOf<Crypto?>(null) }
+
+    dialogCrypto?.let { crypto ->
+        AddAlertDialog(
+            cryptoName = crypto.name,
+            currentPrice = crypto.currentPrice,
+            currency = uiState.preferredCurrency,
+            onConfirm = { threshold, above -> viewModel.onAddAlert(crypto, threshold, above) },
+            onDismiss = { dialogCrypto = null }
+        )
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
         TabRow(selectedTabIndex = selectedTab) {
@@ -77,6 +91,7 @@ fun FavoritesScreen(
                 cryptos = uiState.watchlistCryptos,
                 vsCurrency = uiState.preferredCurrency,
                 onRemove = viewModel::onRemoveCrypto,
+                onBellClick = { dialogCrypto = it },
                 onCryptoClick = onCryptoClick
             )
         }
@@ -119,6 +134,7 @@ private fun CryptosTab(
     cryptos: List<Crypto>,
     vsCurrency: String,
     onRemove: (Crypto) -> Unit,
+    onBellClick: (Crypto) -> Unit,
     onCryptoClick: (cryptoId: String, currency: String) -> Unit
 ) {
     if (cryptos.isEmpty()) {
@@ -139,6 +155,7 @@ private fun CryptosTab(
                         vsCurrency = vsCurrency,
                         isWatchlisted = true,
                         onToggleWatchlist = { onRemove(crypto) },
+                        onBellClick = { onBellClick(crypto) },
                         onClick = { onCryptoClick(crypto.id, vsCurrency) }
                     )
                 }

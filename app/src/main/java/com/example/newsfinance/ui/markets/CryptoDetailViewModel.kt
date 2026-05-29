@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.newsfinance.data.remote.api.CoinGeckoService
+import com.example.newsfinance.domain.model.CryptoAlert
+import com.example.newsfinance.domain.repository.AlertRepository
 import com.example.newsfinance.ui.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -31,24 +33,40 @@ data class CryptoDetailUiState(
     val priceChange24h: Double? = null,
     val chartPoints: List<Pair<Long, Double>> = emptyList(),
     val selectedRange: ChartTimeRange = ChartTimeRange.ONE_WEEK,
+    val currency: String = "usd",
+    val alerts: List<CryptoAlert> = emptyList(),
     val error: String? = null
 )
 
 @HiltViewModel
 class CryptoDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val coinGeckoService: CoinGeckoService
+    private val coinGeckoService: CoinGeckoService,
+    private val alertRepository: AlertRepository
 ) : ViewModel() {
 
     private val cryptoId: String = checkNotNull(savedStateHandle[Screen.CryptoDetail.ARG_ID])
     private val currency: String = checkNotNull(savedStateHandle[Screen.CryptoDetail.ARG_CURRENCY])
 
-    private val _uiState = MutableStateFlow(CryptoDetailUiState())
+    private val _uiState = MutableStateFlow(CryptoDetailUiState(currency = currency))
     val uiState: StateFlow<CryptoDetailUiState> = _uiState.asStateFlow()
 
     init {
         loadHeaderInfo()
         loadChart(ChartTimeRange.ONE_WEEK)
+        observeAlerts()
+    }
+
+    private fun observeAlerts() {
+        viewModelScope.launch {
+            alertRepository.getAlertsForCrypto(cryptoId).collect { alerts ->
+                _uiState.update { it.copy(alerts = alerts) }
+            }
+        }
+    }
+
+    fun onRemoveAlert(id: Long) {
+        viewModelScope.launch { alertRepository.removeAlert(id) }
     }
 
     fun onRangeSelected(range: ChartTimeRange) {
