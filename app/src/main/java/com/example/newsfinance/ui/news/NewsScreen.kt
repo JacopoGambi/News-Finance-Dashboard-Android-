@@ -84,9 +84,9 @@ fun NewsScreen(
     // rileva il paese e attiva il filtro.
     LaunchedEffect(wantLocalNews, locationPermissionState.status) {
         if (wantLocalNews && locationPermissionState.status.isGranted) {
-            val locality = LocationHelper.getLocality(context)
-            if (locality != null) {
-                viewModel.setLocality(locality)
+            val place = LocationHelper.getDetectedPlace(context)
+            if (place != null) {
+                viewModel.setLocality(place.locality, place.countryCode)
                 viewModel.setLocalNews(true)
             } else {
                 snackbarHostState.showSnackbar(

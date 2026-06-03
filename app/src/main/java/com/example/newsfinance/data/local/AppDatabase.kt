@@ -15,7 +15,7 @@ import com.example.newsfinance.data.local.entity.CryptoEntity
  */
 @Database(
     entities = [ArticleEntity::class, CryptoEntity::class, AlertEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

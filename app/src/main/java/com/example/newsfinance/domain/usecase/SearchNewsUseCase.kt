@@ -9,6 +9,6 @@ import javax.inject.Inject
 class SearchNewsUseCase @Inject constructor(
     private val newsRepository: NewsRepository
 ) {
-    operator fun invoke(query: String): Flow<Result<List<Article>>> =
-        newsRepository.searchNews(query = query)
+    operator fun invoke(query: String, country: String? = null): Flow<Result<List<Article>>> =
+        newsRepository.searchNews(query = query, country = country)
 }

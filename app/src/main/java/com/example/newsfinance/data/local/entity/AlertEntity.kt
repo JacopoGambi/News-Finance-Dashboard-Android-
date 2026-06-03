@@ -13,7 +13,10 @@ data class AlertEntity(
     val cryptoId: String,
     val cryptoName: String,
     val threshold: Double,
-    val above: Boolean
+    val above: Boolean,
+    // True quando la soglia è già stata superata e la notifica inviata:
+    // evita notifiche ripetute a ogni ciclo del worker finché la condizione resta vera.
+    val triggered: Boolean = false
 )
 
 fun AlertEntity.toDomain(): CryptoAlert = CryptoAlert(
@@ -21,7 +24,8 @@ fun AlertEntity.toDomain(): CryptoAlert = CryptoAlert(
     cryptoId = cryptoId,
     cryptoName = cryptoName,
     threshold = threshold,
-    above = above
+    above = above,
+    triggered = triggered
 )
 
 fun CryptoAlert.toEntity(): AlertEntity = AlertEntity(
@@ -29,5 +33,6 @@ fun CryptoAlert.toEntity(): AlertEntity = AlertEntity(
     cryptoId = cryptoId,
     cryptoName = cryptoName,
     threshold = threshold,
-    above = above
+    above = above,
+    triggered = triggered
 )

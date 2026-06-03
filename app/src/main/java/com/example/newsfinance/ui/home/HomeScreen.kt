@@ -179,7 +179,8 @@ fun HomeScreen(
                     ) { crypto ->
                         CryptoCard(
                             crypto = crypto,
-                            onClick = { onCryptoClick(crypto.id, "usd") }
+                            vsCurrency = uiState.currency,
+                            onClick = { onCryptoClick(crypto.id, uiState.currency) }
                         )
                     }
                 }

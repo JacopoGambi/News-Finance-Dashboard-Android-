@@ -10,5 +10,7 @@ data class CryptoAlert(
     val cryptoId: String,
     val cryptoName: String,
     val threshold: Double,
-    val above: Boolean
+    val above: Boolean,
+    /** True se la soglia è già stata superata e notificata (anti-spam notifiche). */
+    val triggered: Boolean = false
 )

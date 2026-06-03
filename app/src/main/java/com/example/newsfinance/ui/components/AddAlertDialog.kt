@@ -25,8 +25,7 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.newsfinance.R
-import java.text.NumberFormat
-import java.util.Locale
+import com.example.newsfinance.util.CurrencyFormatter
 
 /**
  * Dialog per aggiungere un alert di prezzo su una crypto.
@@ -42,6 +41,7 @@ fun AddAlertDialog(
 ) {
     var input by remember { mutableStateOf("") }
     var above by remember { mutableStateOf(true) }
+    var showError by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -55,11 +55,16 @@ fun AddAlertDialog(
                         val filtered = normalized.filter { it.isDigit() || it == '.' }
                         if (filtered.count { it == '.' } <= 1 && !filtered.startsWith('.')) {
                             input = filtered
+                            showError = false
                         }
                     },
                     label = { Text(stringResource(R.string.alert_price_in, currency.uppercase())) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
+                    isError = showError,
+                    supportingText = if (showError) {
+                        { Text(stringResource(R.string.alert_invalid_input)) }
+                    } else null,
                     visualTransformation = CurrencyVisualTransformation(currency)
                 )
                 Text(
@@ -82,7 +87,7 @@ fun AddAlertDialog(
                 Text(
                     text = stringResource(
                         R.string.alert_current_price,
-                        formatPrice(currentPrice, currency)
+                        CurrencyFormatter.format(currentPrice, currency)
                     ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -93,8 +98,13 @@ fun AddAlertDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    input.toDoubleOrNull()?.let { threshold -> onConfirm(threshold, above) }
-                    onDismiss()
+                    val threshold = input.toDoubleOrNull()
+                    if (threshold != null && threshold > 0) {
+                        onConfirm(threshold, above)
+                        onDismiss()
+                    } else {
+                        showError = true
+                    }
                 }
             ) { Text(stringResource(R.string.action_add)) }
         },
@@ -102,16 +112,6 @@ fun AddAlertDialog(
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         }
     )
-}
-
-private fun formatPrice(price: Double?, currency: String): String {
-    if (price == null) return "N/A"
-    val nf = if (currency.equals("eur", ignoreCase = true)) {
-        NumberFormat.getCurrencyInstance(Locale.GERMANY)
-    } else {
-        NumberFormat.getCurrencyInstance(Locale.US)
-    }
-    return nf.format(price)
 }
 
 /**

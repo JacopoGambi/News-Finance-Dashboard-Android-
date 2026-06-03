@@ -5,12 +5,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.newsfinance.R
-import com.example.newsfinance.data.remote.api.CoinGeckoService
 import com.example.newsfinance.domain.model.CryptoAlert
 import com.example.newsfinance.domain.repository.AlertRepository
+import com.example.newsfinance.domain.repository.CryptoRepository
 import com.example.newsfinance.ui.navigation.Screen
+import com.example.newsfinance.util.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,7 +43,7 @@ data class CryptoDetailUiState(
 @HiltViewModel
 class CryptoDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val coinGeckoService: CoinGeckoService,
+    private val cryptoRepository: CryptoRepository,
     private val alertRepository: AlertRepository
 ) : ViewModel() {
 
@@ -78,48 +78,34 @@ class CryptoDetailViewModel @Inject constructor(
     }
 
     private fun loadHeaderInfo() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val list = coinGeckoService.getMarketsByIds(
-                    vsCurrency = currency,
-                    ids = cryptoId
-                )
-                list.firstOrNull()?.let { dto ->
-                    _uiState.update { state ->
-                        state.copy(
-                            cryptoName = dto.name ?: cryptoId,
-                            cryptoSymbol = dto.symbol?.uppercase() ?: "",
-                            imageUrl = dto.image,
-                            currentPrice = dto.currentPrice,
-                            priceChange24h = dto.priceChangePercentage24h
-                        )
-                    }
+        viewModelScope.launch {
+            when (val result = cryptoRepository.getCryptoDetail(cryptoId, currency)) {
+                is Result.Success -> _uiState.update { state ->
+                    val crypto = result.data
+                    state.copy(
+                        cryptoName = crypto.name,
+                        cryptoSymbol = crypto.symbol.uppercase(),
+                        imageUrl = crypto.imageUrl,
+                        currentPrice = crypto.currentPrice,
+                        priceChange24h = crypto.priceChangePercentage24h
+                    )
                 }
-            } catch (_: Exception) { /* fallback silenzioso: l'header mostra solo l'ID */ }
+                // Fallback silenzioso: l'header mostra solo l'ID
+                is Result.Error, Result.Loading -> Unit
+            }
         }
     }
 
     private fun loadChart(range: ChartTimeRange) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val chart = coinGeckoService.getMarketChart(
-                    id = cryptoId,
-                    vsCurrency = currency,
-                    days = range.days
-                )
-                val points = chart.prices.mapNotNull { entry ->
-                    if (entry.size >= 2) entry[0].toLong() to entry[1] else null
+        viewModelScope.launch {
+            when (val result = cryptoRepository.getPriceChart(cryptoId, currency, range.days)) {
+                is Result.Success -> _uiState.update { state ->
+                    state.copy(isLoading = false, chartPoints = result.data, error = null)
                 }
-                _uiState.update { state ->
-                    state.copy(isLoading = false, chartPoints = points, error = null)
+                is Result.Error -> _uiState.update { state ->
+                    state.copy(isLoading = false, error = result.message)
                 }
-            } catch (e: Exception) {
-                _uiState.update { state ->
-                    state.copy(
-                        isLoading = false,
-                        error = e.message ?: "Errore nel caricamento del grafico"
-                    )
-                }
+                Result.Loading -> Unit
             }
         }
     }

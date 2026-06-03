@@ -20,42 +20,63 @@ data class UserPreferences(
     val preferredCurrency: String = "usd",
     val preferredCountry: String = "us",
     val notificationsEnabled: Boolean = true,
-    val updateIntervalMinutes: Int = 30
+    val updateIntervalMinutes: Int = 30,
+    // Lingua scelta per le notizie. Vuota = segui la lingua di sistema.
+    val preferredLang: String = ""
 )
 
+/**
+ * Astrazione sulle preferenze utente: consente di sostituirla con un fake nei test
+ * e mantiene i consumer (ViewModel, repository, worker) indipendenti da DataStore.
+ */
+interface UserPreferencesDataStore {
+    val preferences: Flow<UserPreferences>
+    suspend fun updateCurrency(currency: String)
+    suspend fun updateCountry(country: String)
+    suspend fun updateNotificationsEnabled(enabled: Boolean)
+    suspend fun updateIntervalMinutes(minutes: Int)
+    suspend fun updateLang(lang: String)
+}
+
 @Singleton
-class UserPreferencesDataStore @Inject constructor(
+class UserPreferencesDataStoreImpl @Inject constructor(
     @ApplicationContext private val context: Context
-) {
+) : UserPreferencesDataStore {
     private object Keys {
         val PREFERRED_CURRENCY = stringPreferencesKey("preferred_currency")
         val PREFERRED_COUNTRY = stringPreferencesKey("preferred_country")
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
         val UPDATE_INTERVAL_MINUTES = intPreferencesKey("update_interval_minutes")
+        val PREFERRED_LANG = stringPreferencesKey("preferred_lang")
     }
 
-    val preferences: Flow<UserPreferences> = context.dataStore.data.map { prefs ->
+    override val preferences: Flow<UserPreferences> = context.dataStore.data.map { prefs ->
         UserPreferences(
             preferredCurrency = prefs[Keys.PREFERRED_CURRENCY] ?: "usd",
             preferredCountry = prefs[Keys.PREFERRED_COUNTRY] ?: "us",
             notificationsEnabled = prefs[Keys.NOTIFICATIONS_ENABLED] ?: true,
-            updateIntervalMinutes = prefs[Keys.UPDATE_INTERVAL_MINUTES] ?: 30
+            updateIntervalMinutes = prefs[Keys.UPDATE_INTERVAL_MINUTES] ?: 30,
+            preferredLang = prefs[Keys.PREFERRED_LANG] ?: ""
         )
     }
 
-    suspend fun updateCurrency(currency: String) {
+    override suspend fun updateCurrency(currency: String) {
         context.dataStore.edit { it[Keys.PREFERRED_CURRENCY] = currency }
     }
 
-    suspend fun updateCountry(country: String) {
+    override suspend fun updateCountry(country: String) {
         context.dataStore.edit { it[Keys.PREFERRED_COUNTRY] = country }
     }
 
-    suspend fun updateNotificationsEnabled(enabled: Boolean) {
+    override suspend fun updateNotificationsEnabled(enabled: Boolean) {
         context.dataStore.edit { it[Keys.NOTIFICATIONS_ENABLED] = enabled }
     }
 
-    suspend fun updateIntervalMinutes(minutes: Int) {
+    override suspend fun updateIntervalMinutes(minutes: Int) {
         context.dataStore.edit { it[Keys.UPDATE_INTERVAL_MINUTES] = minutes }
+    }
+
+    override suspend fun updateLang(lang: String) {
+        context.dataStore.edit { it[Keys.PREFERRED_LANG] = lang }
     }
 }

@@ -5,10 +5,12 @@ import com.example.newsfinance.data.remote.dto.toDomain
 import com.example.newsfinance.domain.model.Crypto
 import com.example.newsfinance.domain.repository.CryptoRepository
 import com.example.newsfinance.util.Result
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -52,6 +54,59 @@ class CryptoRepositoryImpl @Inject constructor(
             } else {
                 emit(Result.Error(t.message ?: "Errore nel recupero dei mercati", t))
             }
+        }
+    }
+
+    override suspend fun getCryptoDetail(
+        id: String,
+        vsCurrency: String
+    ): Result<Crypto> = withContext(Dispatchers.IO) {
+        try {
+            val crypto = coinGeckoService.getMarketsByIds(vsCurrency = vsCurrency, ids = id)
+                .firstOrNull()
+                ?.toDomain()
+            if (crypto != null) {
+                Result.Success(crypto)
+            } else {
+                Result.Error("Crypto non trovata")
+            }
+        } catch (t: Throwable) {
+            Result.Error(t.message ?: "Errore nel recupero del dettaglio", t)
+        }
+    }
+
+    override suspend fun getPriceChart(
+        id: String,
+        vsCurrency: String,
+        days: Int
+    ): Result<List<Pair<Long, Double>>> = withContext(Dispatchers.IO) {
+        try {
+            val points = coinGeckoService.getMarketChart(
+                id = id,
+                vsCurrency = vsCurrency,
+                days = days
+            ).prices.mapNotNull { entry ->
+                if (entry.size >= 2) entry[0].toLong() to entry[1] else null
+            }
+            Result.Success(points)
+        } catch (t: Throwable) {
+            Result.Error(t.message ?: "Errore nel caricamento del grafico", t)
+        }
+    }
+
+    override suspend fun getPrices(
+        ids: List<String>,
+        vsCurrency: String
+    ): Result<Map<String, Double>> = withContext(Dispatchers.IO) {
+        if (ids.isEmpty()) return@withContext Result.Success(emptyMap())
+        try {
+            val map = coinGeckoService.getMarketsByIds(
+                vsCurrency = vsCurrency,
+                ids = ids.distinct().joinToString(",")
+            ).associate { dto -> (dto.id ?: "") to (dto.currentPrice ?: 0.0) }
+            Result.Success(map)
+        } catch (t: Throwable) {
+            Result.Error(t.message ?: "Errore nel recupero dei prezzi", t)
         }
     }
 

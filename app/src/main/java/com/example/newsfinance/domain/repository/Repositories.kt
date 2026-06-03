@@ -39,4 +39,7 @@ interface AlertRepository {
     suspend fun removeAlert(id: Long)
 
     suspend fun getAllAlerts(): List<CryptoAlert>
+
+    /** Aggiorna lo stato di superamento soglia di un alert (anti-spam notifiche). */
+    suspend fun setTriggered(id: Long, triggered: Boolean)
 }

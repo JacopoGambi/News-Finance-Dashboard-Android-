@@ -61,6 +61,7 @@
     <string name="interval_60">60 minutes</string>
     <string name="settings_section_language">Language</string>
     <string name="settings_language">App language</string>
+    <string name="settings_country">Local news country</string>
     <string name="lang_it">Italian</string>
     <string name="lang_en">English</string>
     <string name="lang_es">Spanish</string>
@@ -73,6 +74,7 @@
     <string name="alert_above">▲ Above</string>
     <string name="alert_below">▼ Below</string>
     <string name="alert_current_price">Current price: %1$s</string>
+    <string name="alert_invalid_input">Enter a valid price greater than zero</string>
 
     <!-- Article card -->
     <string name="article_remove_favorite">Remove from favorites</string>

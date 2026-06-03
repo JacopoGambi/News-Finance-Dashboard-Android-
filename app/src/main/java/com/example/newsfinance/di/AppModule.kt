@@ -1,5 +1,7 @@
 package com.example.newsfinance.di
 
+import com.example.newsfinance.data.local.UserPreferencesDataStore
+import com.example.newsfinance.data.local.UserPreferencesDataStoreImpl
 import com.example.newsfinance.data.repository.AlertRepositoryImpl
 import com.example.newsfinance.data.repository.CryptoRepositoryImpl
 import com.example.newsfinance.data.repository.FavoritesRepositoryImpl
@@ -37,4 +39,10 @@ abstract class AppModule {
     @Binds
     @Singleton
     abstract fun bindAlertRepository(impl: AlertRepositoryImpl): AlertRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserPreferencesDataStore(
+        impl: UserPreferencesDataStoreImpl
+    ): UserPreferencesDataStore
 }

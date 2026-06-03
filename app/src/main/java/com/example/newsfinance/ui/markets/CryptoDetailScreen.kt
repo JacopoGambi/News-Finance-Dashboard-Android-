@@ -28,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -41,8 +40,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.newsfinance.R
-import java.text.NumberFormat
-import java.util.Locale
+import com.example.newsfinance.ui.theme.NegativeRed
+import com.example.newsfinance.ui.theme.PositiveGreen
+import com.example.newsfinance.util.CurrencyFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,7 +97,7 @@ fun CryptoDetailScreen(
             Spacer(modifier = Modifier.height(8.dp))
             if (uiState.currentPrice != null) {
                 Text(
-                    text = formatPrice(uiState.currentPrice, uiState.currency),
+                    text = CurrencyFormatter.format(uiState.currentPrice, uiState.currency),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -120,7 +120,7 @@ fun CryptoDetailScreen(
                 Text(
                     text = "${if (positive) "+" else ""}${"%.2f".format(rangeChange)}% ($rangeLabel)",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (positive) Color(0xFF4CAF50) else Color(0xFFF44336)
+                    color = if (positive) PositiveGreen else NegativeRed
                 )
             }
 
@@ -195,7 +195,7 @@ fun CryptoDetailScreen(
                             if (alert.above) R.string.alert_above else R.string.alert_below
                         )
                         Text(
-                            text = "$direction ${formatPrice(alert.threshold, uiState.currency)}",
+                            text = "$direction ${CurrencyFormatter.format(alert.threshold, uiState.currency)}",
                             style = MaterialTheme.typography.bodyLarge
                         )
                         IconButton(onClick = { viewModel.onRemoveAlert(alert.id) }) {
@@ -255,13 +255,4 @@ private fun PriceLineChart(
             style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
         )
     }
-}
-
-private fun formatPrice(price: Double?, currency: String): String {
-    if (price == null) return "N/A"
-    val nf = if (currency.equals("eur", ignoreCase = true))
-        NumberFormat.getCurrencyInstance(Locale.GERMANY)
-    else
-        NumberFormat.getCurrencyInstance(Locale.US)
-    return nf.format(price)
 }

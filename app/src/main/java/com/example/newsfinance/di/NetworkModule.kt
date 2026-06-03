@@ -44,7 +44,11 @@ object NetworkModule {
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    // Ritenta una richiesta sul 429 rispettando l'header Retry-After (o backoff crescente)
+    // Ritenta una richiesta sul 429 rispettando l'header Retry-After (o backoff crescente).
+    // Nota threading: gli interceptor OkHttp vengono eseguiti sul thread pool del
+    // Dispatcher di OkHttp (le chiamate Retrofit suspend usano enqueue), mai sul Main
+    // Thread. Il Thread.sleep di backoff blocca quindi solo un thread di rete di background:
+    // non può generare ANR. L'interruzione viene comunque gestita per uscire subito.
     private fun rateLimitRetryInterceptor() = okhttp3.Interceptor { chain ->
         var response = chain.proceed(chain.request())
         var attempt = 0

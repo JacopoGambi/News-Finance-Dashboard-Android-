@@ -3,22 +3,15 @@ package com.example.newsfinance
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import com.example.newsfinance.data.local.UserPreferencesDataStore
-import com.example.newsfinance.util.Constants
 import com.example.newsfinance.util.NotificationHelper
-import com.example.newsfinance.worker.PriceAlertWorker
+import com.example.newsfinance.worker.PriceAlertScheduler
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -27,6 +20,7 @@ class NewsFinanceApplication : Application(), Configuration.Provider {
     @Inject lateinit var workerFactory: HiltWorkerFactory
     @Inject lateinit var prefsStore: UserPreferencesDataStore
     @Inject lateinit var notificationHelper: NotificationHelper
+    @Inject lateinit var priceAlertScheduler: PriceAlertScheduler
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -38,30 +32,18 @@ class NewsFinanceApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         notificationHelper.createNotificationChannel()
-        schedulePriceAlertWorker()
+        syncPriceAlertWorker()
     }
 
-    private fun schedulePriceAlertWorker() {
+    /** Allinea il worker alle preferenze correnti: pianifica se le notifiche sono attive, altrimenti annulla. */
+    private fun syncPriceAlertWorker() {
         applicationScope.launch {
-            val intervalMinutes = prefsStore.preferences.first().updateIntervalMinutes.toLong()
-
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
-
-            val workRequest = PeriodicWorkRequestBuilder<PriceAlertWorker>(
-                repeatInterval = intervalMinutes,
-                repeatIntervalTimeUnit = TimeUnit.MINUTES
-            )
-                .setConstraints(constraints)
-                .addTag(Constants.WORKER_PRICE_ALERTS_TAG)
-                .build()
-
-            WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
-                Constants.WORKER_PRICE_ALERTS_TAG,
-                ExistingPeriodicWorkPolicy.KEEP,
-                workRequest
-            )
+            val prefs = prefsStore.preferences.first()
+            if (prefs.notificationsEnabled) {
+                priceAlertScheduler.schedule(prefs.updateIntervalMinutes.toLong())
+            } else {
+                priceAlertScheduler.cancel()
+            }
         }
     }
 }

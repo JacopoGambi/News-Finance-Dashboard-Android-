@@ -41,6 +41,7 @@ class NotificationHelper @Inject constructor(
         cryptoName: String,
         currentPrice: Double,
         threshold: Double,
+        currency: String,
         above: Boolean = true
     ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -48,8 +49,8 @@ class NotificationHelper @Inject constructor(
             != PackageManager.PERMISSION_GRANTED
         ) return
 
-        val priceStr = "$${"%.2f".format(currentPrice)}"
-        val thresholdStr = "$${"%.2f".format(threshold)}"
+        val priceStr = CurrencyFormatter.format(currentPrice, currency)
+        val thresholdStr = CurrencyFormatter.format(threshold, currency)
         val contentText = context.getString(
             if (above) R.string.notif_text_above else R.string.notif_text_below,
             priceStr,

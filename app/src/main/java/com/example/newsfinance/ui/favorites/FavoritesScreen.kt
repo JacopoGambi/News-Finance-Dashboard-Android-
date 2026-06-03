@@ -13,7 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ShowChart
+import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -138,7 +138,7 @@ private fun CryptosTab(
 ) {
     if (cryptos.isEmpty()) {
         EmptyState(
-            icon = Icons.Filled.ShowChart,
+            icon = Icons.AutoMirrored.Filled.ShowChart,
             message = stringResource(R.string.favorites_empty_crypto)
         )
     } else {

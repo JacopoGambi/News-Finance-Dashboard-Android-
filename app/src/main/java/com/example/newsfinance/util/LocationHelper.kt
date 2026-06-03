@@ -11,6 +11,9 @@ import java.util.Locale
 
 object LocationHelper {
 
+    /** Località rilevata: nome (città/provincia/regione) e codice paese ISO. */
+    data class DetectedPlace(val locality: String, val countryCode: String?)
+
     @SuppressLint("MissingPermission")
     suspend fun getCountryCode(context: Context): String? = withContext(Dispatchers.IO) {
         try {
@@ -43,6 +46,30 @@ object LocationHelper {
             address.locality
                 ?: address.subAdminArea
                 ?: address.adminArea
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Località e paese in un'unica geocodifica: usato dalle notizie locali per
+     * mostrare i contenuti nella lingua del paese rilevato.
+     */
+    @SuppressLint("MissingPermission")
+    suspend fun getDetectedPlace(context: Context): DetectedPlace? = withContext(Dispatchers.IO) {
+        try {
+            if (!Geocoder.isPresent()) return@withContext null
+            val client = LocationServices.getFusedLocationProviderClient(context)
+            val location = client.lastLocation.await() ?: return@withContext null
+            @Suppress("DEPRECATION")
+            val address = Geocoder(context, Locale.getDefault())
+                .getFromLocation(location.latitude, location.longitude, 1)
+                ?.firstOrNull() ?: return@withContext null
+            val locality = address.locality
+                ?: address.subAdminArea
+                ?: address.adminArea
+                ?: return@withContext null
+            DetectedPlace(locality, address.countryCode?.lowercase())
         } catch (_: Exception) {
             null
         }

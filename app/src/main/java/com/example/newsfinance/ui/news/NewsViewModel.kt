@@ -8,6 +8,7 @@ import com.example.newsfinance.domain.usecase.GetNewsByCategoryUseCase
 import com.example.newsfinance.domain.usecase.SearchNewsUseCase
 import com.example.newsfinance.util.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,6 +32,7 @@ data class NewsUiState(
     val favoriteIds: Set<String> = emptySet()
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class NewsViewModel @Inject constructor(
     private val getNewsByCategoryUseCase: GetNewsByCategoryUseCase,
@@ -41,16 +43,19 @@ class NewsViewModel @Inject constructor(
     private val _rawQuery = MutableStateFlow("")
     private val _selectedCategory = MutableStateFlow("general")
     private val _localOnly = MutableStateFlow(false)
-    private val _locality = MutableStateFlow<String?>(null)
+    private val _localPlace = MutableStateFlow<LocalPlace?>(null)
 
     // Incrementato per forzare un nuovo tentativo di caricamento (pulsante "Riprova")
     private val _refreshTick = MutableStateFlow(0)
+
+    /** Località rilevata e relativo paese (per usare la lingua locale nelle notizie). */
+    private data class LocalPlace(val name: String, val country: String?)
 
     private data class NewsQuery(
         val query: String,
         val category: String,
         val localOnly: Boolean,
-        val locality: String?
+        val place: LocalPlace?
     )
 
     // Debounce 500ms sulla ricerca, ma svuotamento immediato (es. selezione categoria)
@@ -72,18 +77,21 @@ class NewsViewModel @Inject constructor(
         _effectiveQuery,
         _selectedCategory,
         _localOnly,
-        _locality,
+        _localPlace,
         _refreshTick
-    ) { query, category, localOnly, locality, _ ->
-        NewsQuery(query, category, localOnly, locality)
+    ) { query, category, localOnly, place, _ ->
+        NewsQuery(query, category, localOnly, place)
     }
         .flatMapLatest { params ->
-            val localActive = params.localOnly && !params.locality.isNullOrBlank()
+            val localActive = params.localOnly && !params.place?.name.isNullOrBlank()
             val flow = when {
-                // Ricerca esplicita dell'utente: ha priorità
+                // Ricerca esplicita dell'utente: ha priorità (lingua scelta dall'utente)
                 params.query.isNotBlank() -> searchNewsUseCase(query = params.query)
-                // Notizie locali: cerca per nome della località rilevata
-                localActive -> searchNewsUseCase(query = params.locality!!)
+                // Notizie locali: cerca per località nella lingua del paese rilevato
+                localActive -> searchNewsUseCase(
+                    query = params.place!!.name,
+                    country = params.place.country
+                )
                 // Default: top headlines per categoria, nessun filtro geografico
                 else -> getNewsByCategoryUseCase(category = params.category, country = null)
             }
@@ -92,7 +100,7 @@ class NewsViewModel @Inject constructor(
                     selectedCategory = params.category,
                     searchQuery = params.query,
                     localOnly = params.localOnly,
-                    locality = params.locality
+                    locality = params.place?.name
                 )
                 when (result) {
                     is Result.Loading -> base.copy(isLoading = true)
@@ -120,9 +128,9 @@ class NewsViewModel @Inject constructor(
         _selectedCategory.value = category
     }
 
-    /** Registra la località rilevata dalla posizione (es. "Bologna"). */
-    fun setLocality(name: String) {
-        _locality.value = name
+    /** Registra la località rilevata e il suo paese (es. "Bologna", "it"). */
+    fun setLocality(name: String, country: String?) {
+        _localPlace.value = LocalPlace(name, country)
     }
 
     /** Attiva/disattiva il filtro per notizie locali. */

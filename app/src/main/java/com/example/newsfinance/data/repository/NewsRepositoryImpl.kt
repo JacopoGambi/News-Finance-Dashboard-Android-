@@ -1,5 +1,6 @@
 package com.example.newsfinance.data.repository
 
+import com.example.newsfinance.data.local.UserPreferencesDataStore
 import com.example.newsfinance.data.remote.api.NewsApiService
 import com.example.newsfinance.data.remote.dto.toDomain
 import com.example.newsfinance.domain.model.Article
@@ -8,6 +9,7 @@ import com.example.newsfinance.util.Constants
 import com.example.newsfinance.util.Result
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -17,7 +19,8 @@ import javax.inject.Singleton
 
 @Singleton
 class NewsRepositoryImpl @Inject constructor(
-    private val newsApiService: NewsApiService
+    private val newsApiService: NewsApiService,
+    private val prefsStore: UserPreferencesDataStore
 ) : NewsRepository {
 
     private data class CacheEntry(val data: List<Article>, val timestamp: Long)
@@ -29,27 +32,54 @@ class NewsRepositoryImpl @Inject constructor(
         country: String?,
         category: String?
     ): Flow<Result<List<Article>>> = flow {
-        val lang = currentLang()
-        val key = "headlines:$lang:${country.orEmpty()}:${category.orEmpty()}"
+        // Le top-headlines (Home e categorie) seguono la lingua scelta dall'utente.
+        val lang = resolveLang()
+        // Applica il filtro paese solo se la sua lingua coincide con quella scelta:
+        // altrimenti (es. paese IT + lingua EN) GNews restituirebbe quasi sempre 0
+        // risultati. In quel caso si usano notizie globali nella lingua scelta,
+        // con una sola richiesta (niente doppia chiamata = meno consumo di quota).
+        val effectiveCountry =
+            if (country != null && langForCountry(country) == lang) country else null
+        val key = "headlines:$lang:${effectiveCountry.orEmpty()}:${category.orEmpty()}"
         loadWithCache(key, "Errore nel recupero delle notizie") {
-            val response = newsApiService.getTopHeadlines(
-                category = category,
-                lang = lang,
-                country = country,
-                max = Constants.DEFAULT_NEWS_MAX,
-                apiKey = Constants.GNEWS_API_KEY
-            )
-            response.articles.orEmpty().mapNotNull { it.toDomain(category) }
+            fetchHeadlines(category, lang, effectiveCountry)
         }
     }
 
-    override fun searchNews(query: String): Flow<Result<List<Article>>> = flow {
-        val lang = currentLang()
-        loadWithCache("search:$lang:$query", "Errore nella ricerca") {
+    /** Lingua editoriale tipica di un paese, tra quelle supportate da GNews. */
+    private fun langForCountry(country: String): String = when (country.lowercase()) {
+        "it" -> "it"
+        "fr" -> "fr"
+        "es", "mx", "ar", "co", "cl", "pe", "ve" -> "es"
+        "de", "at", "ch" -> "de"
+        "pt", "br" -> "pt"
+        "nl", "be" -> "nl"
+        else -> "en"
+    }
+
+    private suspend fun fetchHeadlines(
+        category: String?,
+        lang: String,
+        country: String?
+    ): List<Article> {
+        val response = newsApiService.getTopHeadlines(
+            category = category,
+            lang = lang,
+            country = country,
+            max = Constants.DEFAULT_NEWS_MAX,
+            apiKey = Constants.GNEWS_API_KEY
+        )
+        return response.articles.orEmpty().mapNotNull { it.toDomain(category) }
+    }
+
+    override fun searchNews(query: String, country: String?): Flow<Result<List<Article>>> = flow {
+        // Notizie locali (con paese): lingua del paese; ricerca esplicita: lingua utente.
+        val lang = if (country != null) langForCountry(country) else resolveLang()
+        loadWithCache("search:$lang:${country.orEmpty()}:$query", "Errore nella ricerca") {
             val response = newsApiService.searchNews(
                 query = query,
                 lang = lang,
-                country = Constants.DEFAULT_COUNTRY,
+                country = country,
                 max = Constants.DEFAULT_NEWS_MAX,
                 apiKey = Constants.GNEWS_API_KEY
             )
@@ -58,11 +88,13 @@ class NewsRepositoryImpl @Inject constructor(
     }
 
     /**
-     * Lingua corrente dell'app (segue il locale scelto in Opzioni) limitata a quelle
-     * supportate da GNews; fallback su inglese per locale non gestiti.
+     * Lingua per le notizie: usa quella scelta dall'utente nelle Impostazioni;
+     * se non impostata segue il locale di sistema. Limitata alle lingue supportate
+     * da GNews, con fallback su inglese.
      */
-    private fun currentLang(): String {
-        val lang = Locale.getDefault().language
+    private suspend fun resolveLang(): String {
+        val preferred = prefsStore.preferences.first().preferredLang
+        val lang = preferred.ifBlank { Locale.getDefault().language }
         return if (lang in SUPPORTED_LANGS) lang else "en"
     }
 
@@ -104,7 +136,9 @@ class NewsRepositoryImpl @Inject constructor(
     }
 
     private companion object {
-        const val CACHE_TTL_MS = 60_000L
+        // TTL ampio: le notizie non cambiano di minuto in minuto e GNews free
+        // ha una quota giornaliera limitata (403 al superamento).
+        const val CACHE_TTL_MS = 600_000L
         val SUPPORTED_LANGS = setOf("it", "en", "es", "fr")
     }
 }

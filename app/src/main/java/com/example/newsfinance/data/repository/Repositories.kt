@@ -101,4 +101,8 @@ class AlertRepositoryImpl @Inject constructor(
     override suspend fun getAllAlerts(): List<CryptoAlert> = withContext(Dispatchers.IO) {
         alertDao.getAllAlerts().map { it.toDomain() }
     }
+
+    override suspend fun setTriggered(id: Long, triggered: Boolean) {
+        withContext(Dispatchers.IO) { alertDao.updateTriggered(id, triggered) }
+    }
 }

@@ -29,7 +29,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.newsfinance.R
 import com.example.newsfinance.domain.model.Crypto
-import java.text.NumberFormat
+import com.example.newsfinance.ui.theme.NegativeRed
+import com.example.newsfinance.ui.theme.PositiveGreen
+import com.example.newsfinance.util.CurrencyFormatter
 import java.util.Locale
 
 @Composable
@@ -76,7 +78,7 @@ fun CryptoCard(
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = formatCryptoPrice(crypto.currentPrice, vsCurrency),
+                    text = CurrencyFormatter.format(crypto.currentPrice, vsCurrency),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
@@ -86,7 +88,7 @@ fun CryptoCard(
                     Text(
                         text = "${if (isPositive) "+" else ""}${"%.2f".format(change)}%",
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (isPositive) Color(0xFF4CAF50) else Color(0xFFF44336)
+                        color = if (isPositive) PositiveGreen else NegativeRed
                     )
                 }
             }
@@ -138,14 +140,4 @@ fun CryptoCard(
             elevation = cardElevation
         ) { cardContent() }
     }
-}
-
-private fun formatCryptoPrice(price: Double?, vsCurrency: String): String {
-    if (price == null) return "N/A"
-    val nf = if (vsCurrency.equals("eur", ignoreCase = true)) {
-        NumberFormat.getCurrencyInstance(Locale.GERMANY)
-    } else {
-        NumberFormat.getCurrencyInstance(Locale.US)
-    }
-    return nf.format(price)
 }

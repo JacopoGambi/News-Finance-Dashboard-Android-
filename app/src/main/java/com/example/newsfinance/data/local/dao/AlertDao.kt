@@ -18,6 +18,9 @@ interface AlertDao {
     @Query("DELETE FROM crypto_alerts WHERE id = :id")
     suspend fun deleteAlert(id: Long)
 
+    @Query("UPDATE crypto_alerts SET triggered = :triggered WHERE id = :id")
+    suspend fun updateTriggered(id: Long, triggered: Boolean)
+
     @Query("SELECT * FROM crypto_alerts WHERE cryptoId = :cryptoId ORDER BY above DESC, threshold ASC")
     fun getAlertsForCrypto(cryptoId: String): Flow<List<AlertEntity>>
 

@@ -29,7 +29,7 @@ interface NewsApiService {
     suspend fun searchNews(
         @Query("q") query: String,
         @Query("lang") lang: String,
-        @Query("country") country: String,
+        @Query("country") country: String?,
         @Query("max") max: Int,
         @Query("apikey") apiKey: String
     ): NewsResponseDto
