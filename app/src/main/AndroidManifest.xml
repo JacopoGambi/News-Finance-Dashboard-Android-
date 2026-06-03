@@ -12,7 +12,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.NewsFinance"
-        tools:targetApi="31"
+        android:localeConfig="@xml/locales_config"
+        tools:targetApi="33"
         xmlns:tools="http://schemas.android.com/tools">
 
         <activity
@@ -25,6 +26,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Persistenza della lingua scelta su API < 33 (per-app language di AppCompat) -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
 
         <!-- Disabilita default WorkManager initializer: usiamo Hilt -->
         <provider

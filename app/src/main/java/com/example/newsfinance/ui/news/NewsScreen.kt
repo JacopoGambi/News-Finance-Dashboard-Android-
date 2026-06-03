@@ -36,9 +36,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.newsfinance.R
 import com.example.newsfinance.ui.components.ArticleCard
 import com.example.newsfinance.ui.components.EmptyState
 import com.example.newsfinance.ui.components.ErrorState
@@ -49,13 +51,13 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 
 private val CATEGORIES = listOf(
-    "general" to "Generale",
-    "business" to "Economia",
-    "technology" to "Tecnologia",
-    "sports" to "Sport",
-    "entertainment" to "Intrattenimento",
-    "health" to "Salute",
-    "science" to "Scienza"
+    "general" to R.string.category_general,
+    "business" to R.string.category_business,
+    "technology" to R.string.category_technology,
+    "sports" to R.string.category_sports,
+    "entertainment" to R.string.category_entertainment,
+    "health" to R.string.category_health,
+    "science" to R.string.category_science
 )
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
@@ -87,7 +89,9 @@ fun NewsScreen(
                 viewModel.setLocality(locality)
                 viewModel.setLocalNews(true)
             } else {
-                snackbarHostState.showSnackbar("Impossibile rilevare la posizione")
+                snackbarHostState.showSnackbar(
+                    context.getString(R.string.news_location_unavailable)
+                )
                 wantLocalNews = false
             }
         }
@@ -103,7 +107,7 @@ fun NewsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("Cerca notizie...") },
+                placeholder = { Text(stringResource(R.string.news_search_hint)) },
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Search, contentDescription = null)
                 },
@@ -112,7 +116,7 @@ fun NewsScreen(
                         IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
-                                contentDescription = "Cancella ricerca"
+                                contentDescription = stringResource(R.string.news_clear_search)
                             )
                         }
                     }
@@ -142,9 +146,9 @@ fun NewsScreen(
                         val place = uiState.locality
                         Text(
                             if (uiState.localOnly && place != null) {
-                                "Notizie locali ($place)"
+                                stringResource(R.string.news_local_with_place, place)
                             } else {
-                                "Notizie locali"
+                                stringResource(R.string.news_local)
                             }
                         )
                     },
@@ -165,11 +169,11 @@ fun NewsScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(vertical = 8.dp)
                     ) {
-                        items(CATEGORIES) { (key, label) ->
+                        items(CATEGORIES) { (key, labelRes) ->
                             FilterChip(
                                 selected = uiState.selectedCategory == key,
                                 onClick = { viewModel.onCategorySelected(key) },
-                                label = { Text(label) }
+                                label = { Text(stringResource(labelRes)) }
                             )
                         }
                     }
@@ -181,12 +185,12 @@ fun NewsScreen(
                 when {
                     uiState.isLoading -> LoadingState()
                     uiState.articles.isEmpty() && uiState.error != null -> ErrorState(
-                        message = uiState.error ?: "Errore di caricamento",
+                        message = stringResource(R.string.error_loading),
                         onRetry = viewModel::retry
                     )
                     uiState.articles.isEmpty() -> EmptyState(
                         icon = Icons.Default.Search,
-                        message = "Nessun articolo trovato."
+                        message = stringResource(R.string.news_empty)
                     )
                     else -> LazyColumn(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),

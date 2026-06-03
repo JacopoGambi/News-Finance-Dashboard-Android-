@@ -22,10 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.newsfinance.R
 import com.example.newsfinance.domain.model.Crypto
 import java.text.NumberFormat
 import java.util.Locale
@@ -98,8 +100,10 @@ fun CryptoCard(
                             Icon(
                                 imageVector = if (isWatchlisted) Icons.Filled.Star
                                               else Icons.Filled.StarBorder,
-                                contentDescription = if (isWatchlisted) "Rimuovi dalla watchlist"
-                                                     else "Aggiungi alla watchlist",
+                                contentDescription = stringResource(
+                                    if (isWatchlisted) R.string.crypto_remove_watchlist
+                                    else R.string.crypto_add_watchlist
+                                ),
                                 tint = if (isWatchlisted) Color(0xFFFFC107)
                                        else MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -112,7 +116,7 @@ fun CryptoCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.NotificationsNone,
-                                contentDescription = "Aggiungi alert di prezzo",
+                                contentDescription = stringResource(R.string.crypto_add_alert),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }

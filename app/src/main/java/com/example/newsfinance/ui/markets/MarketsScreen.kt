@@ -26,9 +26,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.newsfinance.R
 import com.example.newsfinance.domain.model.Crypto
 import com.example.newsfinance.ui.components.AddAlertDialog
 import com.example.newsfinance.ui.components.CryptoCard
@@ -76,7 +78,7 @@ fun MarketsScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Valuta:",
+                    text = stringResource(R.string.markets_currency),
                     style = MaterialTheme.typography.labelMedium
                 )
                 listOf("usd" to "USD", "eur" to "EUR").forEach { (key, label) ->
@@ -94,7 +96,7 @@ fun MarketsScreen(
             } else if (uiState.cryptos.isEmpty() && uiState.error != null) {
                 // Errore senza dati in cache: schermata di errore con possibilità di riprovare
                 ErrorState(
-                    message = uiState.error ?: "Errore di caricamento",
+                    message = stringResource(R.string.error_loading),
                     onRetry = viewModel::refresh
                 )
             } else {
@@ -106,7 +108,7 @@ fun MarketsScreen(
                     if (uiState.cryptos.isEmpty()) {
                         EmptyState(
                             icon = Icons.Filled.CurrencyBitcoin,
-                            message = "Nessuna crypto disponibile."
+                            message = stringResource(R.string.markets_empty)
                         )
                     } else {
                         LazyColumn(

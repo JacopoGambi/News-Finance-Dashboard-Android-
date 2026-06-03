@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.example.newsfinance.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,10 +26,10 @@ class NotificationHelper @Inject constructor(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 Constants.NOTIFICATION_CHANNEL_PRICE_ALERTS,
-                "Price Alerts",
+                context.getString(R.string.notif_channel_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Notifications when a crypto crosses your alert threshold"
+                description = context.getString(R.string.notif_channel_desc)
             }
             context.getSystemService(NotificationManager::class.java)
                 .createNotificationChannel(channel)
@@ -47,16 +48,20 @@ class NotificationHelper @Inject constructor(
             != PackageManager.PERMISSION_GRANTED
         ) return
 
-        val direction = if (above) "risen above" else "dropped below"
+        val priceStr = "$${"%.2f".format(currentPrice)}"
+        val thresholdStr = "$${"%.2f".format(threshold)}"
+        val contentText = context.getString(
+            if (above) R.string.notif_text_above else R.string.notif_text_below,
+            priceStr,
+            thresholdStr
+        )
         val notification = NotificationCompat.Builder(
             context,
             Constants.NOTIFICATION_CHANNEL_PRICE_ALERTS
         )
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("Price Alert: $cryptoName")
-            .setContentText(
-                "Current price $${"%.2f".format(currentPrice)} has $direction your alert threshold of $${"%.2f".format(threshold)}"
-            )
+            .setContentTitle(context.getString(R.string.notif_title, cryptoName))
+            .setContentText(contentText)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .build()

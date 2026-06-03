@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,11 +29,12 @@ class NewsRepositoryImpl @Inject constructor(
         country: String?,
         category: String?
     ): Flow<Result<List<Article>>> = flow {
-        val key = "headlines:${country.orEmpty()}:${category.orEmpty()}"
+        val lang = currentLang()
+        val key = "headlines:$lang:${country.orEmpty()}:${category.orEmpty()}"
         loadWithCache(key, "Errore nel recupero delle notizie") {
             val response = newsApiService.getTopHeadlines(
                 category = category,
-                lang = Constants.DEFAULT_LANG,
+                lang = lang,
                 country = country,
                 max = Constants.DEFAULT_NEWS_MAX,
                 apiKey = Constants.GNEWS_API_KEY
@@ -42,16 +44,26 @@ class NewsRepositoryImpl @Inject constructor(
     }
 
     override fun searchNews(query: String): Flow<Result<List<Article>>> = flow {
-        loadWithCache("search:$query", "Errore nella ricerca") {
+        val lang = currentLang()
+        loadWithCache("search:$lang:$query", "Errore nella ricerca") {
             val response = newsApiService.searchNews(
                 query = query,
-                lang = Constants.DEFAULT_LANG,
+                lang = lang,
                 country = Constants.DEFAULT_COUNTRY,
                 max = Constants.DEFAULT_NEWS_MAX,
                 apiKey = Constants.GNEWS_API_KEY
             )
             response.articles.orEmpty().mapNotNull { it.toDomain() }
         }
+    }
+
+    /**
+     * Lingua corrente dell'app (segue il locale scelto in Opzioni) limitata a quelle
+     * supportate da GNews; fallback su inglese per locale non gestiti.
+     */
+    private fun currentLang(): String {
+        val lang = Locale.getDefault().language
+        return if (lang in SUPPORTED_LANGS) lang else "en"
     }
 
     /**
@@ -93,5 +105,6 @@ class NewsRepositoryImpl @Inject constructor(
 
     private companion object {
         const val CACHE_TTL_MS = 60_000L
+        val SUPPORTED_LANGS = setOf("it", "en", "es", "fr")
     }
 }

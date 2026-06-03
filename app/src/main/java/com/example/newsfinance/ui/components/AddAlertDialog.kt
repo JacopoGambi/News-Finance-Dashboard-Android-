@@ -17,12 +17,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.newsfinance.R
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -43,7 +45,7 @@ fun AddAlertDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Nuovo alert — $cryptoName") },
+        title = { Text(stringResource(R.string.alert_new_title, cryptoName)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 OutlinedTextField(
@@ -55,13 +57,13 @@ fun AddAlertDialog(
                             input = filtered
                         }
                     },
-                    label = { Text("Prezzo in ${currency.uppercase()}") },
+                    label = { Text(stringResource(R.string.alert_price_in, currency.uppercase())) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     visualTransformation = CurrencyVisualTransformation(currency)
                 )
                 Text(
-                    text = "Notifica quando il prezzo:",
+                    text = stringResource(R.string.alert_notify_when),
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -69,16 +71,19 @@ fun AddAlertDialog(
                     FilterChip(
                         selected = above,
                         onClick = { above = true },
-                        label = { Text("▲ Sopra") }
+                        label = { Text(stringResource(R.string.alert_above)) }
                     )
                     FilterChip(
                         selected = !above,
                         onClick = { above = false },
-                        label = { Text("▼ Sotto") }
+                        label = { Text(stringResource(R.string.alert_below)) }
                     )
                 }
                 Text(
-                    text = "Prezzo attuale: ${formatPrice(currentPrice, currency)}",
+                    text = stringResource(
+                        R.string.alert_current_price,
+                        formatPrice(currentPrice, currency)
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 16.dp)
@@ -91,10 +96,10 @@ fun AddAlertDialog(
                     input.toDoubleOrNull()?.let { threshold -> onConfirm(threshold, above) }
                     onDismiss()
                 }
-            ) { Text("Aggiungi") }
+            ) { Text(stringResource(R.string.action_add)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Annulla") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         }
     )
 }

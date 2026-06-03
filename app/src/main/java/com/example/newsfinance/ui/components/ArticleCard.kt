@@ -24,9 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.newsfinance.R
 import com.example.newsfinance.domain.model.Article
 import java.time.Instant
 import java.time.ZoneId
@@ -102,8 +104,10 @@ fun ArticleCard(
                     Icon(
                         imageVector = if (isFavorite) Icons.Filled.Bookmark
                                       else Icons.Outlined.Bookmark,
-                        contentDescription = if (isFavorite) "Rimuovi dai preferiti"
-                                            else "Aggiungi ai preferiti",
+                        contentDescription = stringResource(
+                            if (isFavorite) R.string.article_remove_favorite
+                            else R.string.article_add_favorite
+                        ),
                         tint = if (isFavorite) MaterialTheme.colorScheme.primary
                                else MaterialTheme.colorScheme.onSurfaceVariant
                     )

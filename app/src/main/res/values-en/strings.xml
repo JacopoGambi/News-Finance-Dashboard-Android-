@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NewsFinance</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_news">News</string>
+    <string name="nav_markets">Markets</string>
+    <string name="nav_favorites">Favorites</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_detail">Details</string>
+
+    <!-- Common -->
+    <string name="action_retry">Retry</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_add">Add</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_back">Back</string>
+    <string name="error_loading">Something went wrong. Check your connection and try again.</string>
+
+    <!-- Home -->
+    <string name="home_latest_news">Latest News</string>
+    <string name="home_top_crypto">Top Crypto</string>
+    <string name="location_enable_title">Enable location</string>
+    <string name="location_enable_desc">Location lets us show more relevant local news.</string>
+
+    <!-- News -->
+    <string name="news_search_hint">Search news…</string>
+    <string name="news_clear_search">Clear search</string>
+    <string name="news_local">Local news</string>
+    <string name="news_local_with_place">Local news (%1$s)</string>
+    <string name="news_location_unavailable">Unable to detect location</string>
+    <string name="news_empty">No articles found.</string>
+    <string name="category_general">General</string>
+    <string name="category_business">Business</string>
+    <string name="category_technology">Technology</string>
+    <string name="category_sports">Sports</string>
+    <string name="category_entertainment">Entertainment</string>
+    <string name="category_health">Health</string>
+    <string name="category_science">Science</string>
+
+    <!-- Markets -->
+    <string name="markets_currency">Currency:</string>
+    <string name="markets_empty">No cryptocurrencies available.</string>
+
+    <!-- Favorites -->
+    <string name="favorites_tab_news">News</string>
+    <string name="favorites_tab_crypto">Crypto</string>
+    <string name="favorites_empty_articles">No saved articles</string>
+    <string name="favorites_empty_crypto">No cryptocurrencies in watchlist</string>
+
+    <!-- Settings -->
+    <string name="settings_section_markets">Markets</string>
+    <string name="settings_currency">Currency</string>
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_enable_notifications">Enable notifications</string>
+    <string name="settings_update_interval">Update interval</string>
+    <string name="interval_15">15 minutes</string>
+    <string name="interval_30">30 minutes</string>
+    <string name="interval_60">60 minutes</string>
+    <string name="settings_section_language">Language</string>
+    <string name="settings_language">App language</string>
+    <string name="lang_it">Italian</string>
+    <string name="lang_en">English</string>
+    <string name="lang_es">Spanish</string>
+    <string name="lang_fr">French</string>
+
+    <!-- Price alerts -->
+    <string name="alert_new_title">New alert — %1$s</string>
+    <string name="alert_price_in">Price in %1$s</string>
+    <string name="alert_notify_when">Notify me when the price:</string>
+    <string name="alert_above">▲ Above</string>
+    <string name="alert_below">▼ Below</string>
+    <string name="alert_current_price">Current price: %1$s</string>
+
+    <!-- Article card -->
+    <string name="article_remove_favorite">Remove from favorites</string>
+    <string name="article_add_favorite">Add to favorites</string>
+
+    <!-- Crypto card -->
+    <string name="crypto_remove_watchlist">Remove from watchlist</string>
+    <string name="crypto_add_watchlist">Add to watchlist</string>
+    <string name="crypto_add_alert">Add price alert</string>
+
+    <!-- Crypto detail -->
+    <string name="chart_no_data">No data available</string>
+    <string name="detail_alerts_set">Active alerts</string>
+    <string name="detail_no_alerts">No alerts set</string>
+    <string name="detail_remove_alert">Delete alert</string>
+    <string name="range_1d">1D</string>
+    <string name="range_1w">1W</string>
+    <string name="range_1m">1M</string>
+    <string name="range_3m">3M</string>
+    <string name="range_1y">1Y</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_name">Price Alerts</string>
+    <string name="notif_channel_desc">Notifications when a crypto crosses your alert threshold</string>
+    <string name="notif_title">Price Alert: %1$s</string>
+    <string name="notif_text_above">Current price %1$s has risen above your threshold of %2$s</string>
+    <string name="notif_text_below">Current price %1$s has dropped below your threshold of %2$s</string>
+</resources>

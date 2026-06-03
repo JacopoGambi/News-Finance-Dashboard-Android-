@@ -33,12 +33,14 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Canvas
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.newsfinance.R
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -71,7 +73,7 @@ fun CryptoDetailScreen(
                     Text(
                         text = if (uiState.cryptoName.isNotEmpty())
                             "${uiState.cryptoName} (${uiState.cryptoSymbol})"
-                        else "Dettaglio"
+                        else stringResource(R.string.nav_detail)
                     )
                 }
             },
@@ -79,7 +81,7 @@ fun CryptoDetailScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Indietro"
+                        contentDescription = stringResource(R.string.action_back)
                     )
                 }
             }
@@ -112,7 +114,7 @@ fun CryptoDetailScreen(
                     uiState.priceChange24h
                 }
             }
-            val rangeLabel = uiState.selectedRange.label
+            val rangeLabel = stringResource(uiState.selectedRange.labelRes)
             if (rangeChange != null) {
                 val positive = rangeChange >= 0
                 Text(
@@ -133,7 +135,7 @@ fun CryptoDetailScreen(
                     FilterChip(
                         selected = uiState.selectedRange == range,
                         onClick = { viewModel.onRangeSelected(range) },
-                        label = { Text(range.label) }
+                        label = { Text(stringResource(range.labelRes)) }
                     )
                 }
             }
@@ -151,12 +153,12 @@ fun CryptoDetailScreen(
                 when {
                     uiState.isLoading -> CircularProgressIndicator()
                     chartError != null -> Text(
-                        text = chartError,
+                        text = stringResource(R.string.error_loading),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error
                     )
                     uiState.chartPoints.isEmpty() -> Text(
-                        text = "Nessun dato disponibile",
+                        text = stringResource(R.string.chart_no_data),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -171,14 +173,14 @@ fun CryptoDetailScreen(
 
             // Lista degli alert di prezzo impostati su questa crypto
             Text(
-                text = "Alert impostati",
+                text = stringResource(R.string.detail_alerts_set),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.height(8.dp))
             if (uiState.alerts.isEmpty()) {
                 Text(
-                    text = "Nessun alert impostato",
+                    text = stringResource(R.string.detail_no_alerts),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -189,14 +191,17 @@ fun CryptoDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val direction = stringResource(
+                            if (alert.above) R.string.alert_above else R.string.alert_below
+                        )
                         Text(
-                            text = "${if (alert.above) "▲ Sopra" else "▼ Sotto"} ${formatPrice(alert.threshold, uiState.currency)}",
+                            text = "$direction ${formatPrice(alert.threshold, uiState.currency)}",
                             style = MaterialTheme.typography.bodyLarge
                         )
                         IconButton(onClick = { viewModel.onRemoveAlert(alert.id) }) {
                             Icon(
                                 imageVector = Icons.Filled.Delete,
-                                contentDescription = "Elimina alert",
+                                contentDescription = stringResource(R.string.detail_remove_alert),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }

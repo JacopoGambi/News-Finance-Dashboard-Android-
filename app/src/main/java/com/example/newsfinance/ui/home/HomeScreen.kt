@@ -43,9 +43,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.newsfinance.R
 import com.example.newsfinance.ui.components.ArticleCard
 import com.example.newsfinance.ui.components.CryptoCard
 import com.example.newsfinance.ui.components.ErrorState
@@ -111,7 +113,7 @@ fun HomeScreen(
         } else if (isEmptyError) {
             // Errore senza dati in cache: schermata di errore con possibilità di riprovare
             ErrorState(
-                message = uiState.error ?: "Errore di caricamento",
+                message = stringResource(R.string.error_loading),
                 onRetry = viewModel::refresh
             )
         } else {
@@ -139,7 +141,7 @@ fun HomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Ultime Notizie",
+                                text = stringResource(R.string.home_latest_news),
                                 style = MaterialTheme.typography.titleMedium
                             )
                             uiState.detectedCountry?.let { detected ->
@@ -166,7 +168,7 @@ fun HomeScreen(
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Top Crypto",
+                            text = stringResource(R.string.home_top_crypto),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -214,12 +216,12 @@ private fun LocationPermissionBanner(context: Context) {
                     .padding(horizontal = 8.dp)
             ) {
                 Text(
-                    text = "Abilita la posizione",
+                    text = stringResource(R.string.location_enable_title),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = "La posizione permette di mostrare notizie locali più rilevanti.",
+                    text = stringResource(R.string.location_enable_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -232,7 +234,7 @@ private fun LocationPermissionBanner(context: Context) {
                     context.startActivity(intent)
                 }
             ) {
-                Text("Impostazioni")
+                Text(stringResource(R.string.action_settings))
             }
         }
     }

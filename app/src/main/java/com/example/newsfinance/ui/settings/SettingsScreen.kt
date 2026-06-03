@@ -26,9 +26,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.newsfinance.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -39,9 +43,16 @@ private val currencies = listOf(
 )
 
 private val intervals = listOf(
-    15 to "15 minuti",
-    30 to "30 minuti",
-    60 to "60 minuti"
+    15 to R.string.interval_15,
+    30 to R.string.interval_30,
+    60 to R.string.interval_60
+)
+
+private val languages = listOf(
+    "it" to R.string.lang_it,
+    "en" to R.string.lang_en,
+    "es" to R.string.lang_es,
+    "fr" to R.string.lang_fr
 )
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
@@ -57,6 +68,10 @@ fun SettingsScreen(
         Manifest.permission.POST_NOTIFICATIONS
     )
 
+    // Lingua attualmente applicata all'app (o quella di sistema se non impostata)
+    val currentLanguage = AppCompatDelegate.getApplicationLocales()[0]?.language
+        ?: java.util.Locale.getDefault().language
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -64,11 +79,27 @@ fun SettingsScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // --- Sezione Mercati ---
-        SectionHeader("Mercati")
+        // --- Sezione Lingua ---
+        SectionHeader(stringResource(R.string.settings_section_language))
 
         SettingsDropdown(
-            label = "Valuta",
+            label = stringResource(R.string.settings_language),
+            options = languages.map { (tag, res) -> tag to stringResource(res) },
+            selectedKey = currentLanguage,
+            onSelected = { tag ->
+                AppCompatDelegate.setApplicationLocales(
+                    LocaleListCompat.forLanguageTags(tag)
+                )
+            }
+        )
+
+        HorizontalDivider()
+
+        // --- Sezione Mercati ---
+        SectionHeader(stringResource(R.string.settings_section_markets))
+
+        SettingsDropdown(
+            label = stringResource(R.string.settings_currency),
             options = currencies,
             selectedKey = prefs.preferredCurrency,
             onSelected = viewModel::onCurrencyChanged
@@ -77,14 +108,17 @@ fun SettingsScreen(
         HorizontalDivider()
 
         // --- Sezione Notifiche ---
-        SectionHeader("Notifiche")
+        SectionHeader(stringResource(R.string.settings_section_notifications))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Abilita notifiche", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                stringResource(R.string.settings_enable_notifications),
+                style = MaterialTheme.typography.bodyLarge
+            )
             Switch(
                 checked = prefs.notificationsEnabled,
                 onCheckedChange = { enabled ->
@@ -97,8 +131,8 @@ fun SettingsScreen(
         }
 
         SettingsDropdown(
-            label = "Intervallo aggiornamento",
-            options = intervals.map { (k, v) -> k.toString() to v },
+            label = stringResource(R.string.settings_update_interval),
+            options = intervals.map { (k, res) -> k.toString() to stringResource(res) },
             selectedKey = prefs.updateIntervalMinutes.toString(),
             onSelected = { viewModel.onIntervalChanged(it.toInt()) },
             enabled = prefs.notificationsEnabled

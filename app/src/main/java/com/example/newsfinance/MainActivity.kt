@@ -1,8 +1,8 @@
 package com.example.newsfinance
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -21,7 +22,7 @@ import com.example.newsfinance.ui.theme.NewsFinanceTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -40,14 +41,21 @@ class MainActivity : ComponentActivity() {
                         val currentDestination = navBackStackEntry?.destination
                         NavigationBar {
                             tabs.forEach { screen ->
+                                val label = stringResource(screen.labelRes)
                                 NavigationBarItem(
                                     icon = {
                                         Icon(
                                             imageVector = screen.icon,
-                                            contentDescription = screen.label
+                                            contentDescription = label
                                         )
                                     },
-                                    label = { Text(text = screen.label) },
+                                    label = {
+                                        Text(
+                                            text = label,
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
+                                    },
                                     selected = currentDestination?.hierarchy
                                         ?.any { it.route == screen.route } == true,
                                     onClick = {

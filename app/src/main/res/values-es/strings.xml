@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NewsFinance</string>
+
+    <!-- Navegación -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_news">Noticias</string>
+    <string name="nav_markets">Mercados</string>
+    <string name="nav_favorites">Favoritos</string>
+    <string name="nav_settings">Opciones</string>
+    <string name="nav_detail">Detalle</string>
+
+    <!-- Comunes -->
+    <string name="action_retry">Reintentar</string>
+    <string name="action_settings">Ajustes</string>
+    <string name="action_add">Añadir</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_back">Atrás</string>
+    <string name="error_loading">Se ha producido un error. Comprueba la conexión e inténtalo de nuevo.</string>
+
+    <!-- Inicio -->
+    <string name="home_latest_news">Últimas Noticias</string>
+    <string name="home_top_crypto">Top Cripto</string>
+    <string name="location_enable_title">Activar ubicación</string>
+    <string name="location_enable_desc">La ubicación permite mostrar noticias locales más relevantes.</string>
+
+    <!-- Noticias -->
+    <string name="news_search_hint">Buscar noticias…</string>
+    <string name="news_clear_search">Borrar búsqueda</string>
+    <string name="news_local">Noticias locales</string>
+    <string name="news_local_with_place">Noticias locales (%1$s)</string>
+    <string name="news_location_unavailable">No se pudo detectar la ubicación</string>
+    <string name="news_empty">No se encontraron artículos.</string>
+    <string name="category_general">General</string>
+    <string name="category_business">Economía</string>
+    <string name="category_technology">Tecnología</string>
+    <string name="category_sports">Deportes</string>
+    <string name="category_entertainment">Entretenimiento</string>
+    <string name="category_health">Salud</string>
+    <string name="category_science">Ciencia</string>
+
+    <!-- Mercados -->
+    <string name="markets_currency">Moneda:</string>
+    <string name="markets_empty">No hay criptomonedas disponibles.</string>
+
+    <!-- Favoritos -->
+    <string name="favorites_tab_news">Noticias</string>
+    <string name="favorites_tab_crypto">Cripto</string>
+    <string name="favorites_empty_articles">No hay artículos guardados</string>
+    <string name="favorites_empty_crypto">No hay criptomonedas en la lista</string>
+
+    <!-- Ajustes -->
+    <string name="settings_section_markets">Mercados</string>
+    <string name="settings_currency">Moneda</string>
+    <string name="settings_section_notifications">Notificaciones</string>
+    <string name="settings_enable_notifications">Activar notificaciones</string>
+    <string name="settings_update_interval">Intervalo de actualización</string>
+    <string name="interval_15">15 minutos</string>
+    <string name="interval_30">30 minutos</string>
+    <string name="interval_60">60 minutos</string>
+    <string name="settings_section_language">Idioma</string>
+    <string name="settings_language">Idioma de la app</string>
+    <string name="lang_it">Italiano</string>
+    <string name="lang_en">Inglés</string>
+    <string name="lang_es">Español</string>
+    <string name="lang_fr">Francés</string>
+
+    <!-- Alertas de precio -->
+    <string name="alert_new_title">Nueva alerta — %1$s</string>
+    <string name="alert_price_in">Precio en %1$s</string>
+    <string name="alert_notify_when">Notificar cuando el precio:</string>
+    <string name="alert_above">▲ Por encima</string>
+    <string name="alert_below">▼ Por debajo</string>
+    <string name="alert_current_price">Precio actual: %1$s</string>
+
+    <!-- Tarjeta de artículo -->
+    <string name="article_remove_favorite">Quitar de favoritos</string>
+    <string name="article_add_favorite">Añadir a favoritos</string>
+
+    <!-- Tarjeta de cripto -->
+    <string name="crypto_remove_watchlist">Quitar de la lista</string>
+    <string name="crypto_add_watchlist">Añadir a la lista</string>
+    <string name="crypto_add_alert">Añadir alerta de precio</string>
+
+    <!-- Detalle cripto -->
+    <string name="chart_no_data">No hay datos disponibles</string>
+    <string name="detail_alerts_set">Alertas activas</string>
+    <string name="detail_no_alerts">No hay alertas configuradas</string>
+    <string name="detail_remove_alert">Eliminar alerta</string>
+    <string name="range_1d">1D</string>
+    <string name="range_1w">1S</string>
+    <string name="range_1m">1M</string>
+    <string name="range_3m">3M</string>
+    <string name="range_1y">1A</string>
+
+    <!-- Notificaciones -->
+    <string name="notif_channel_name">Alertas de precio</string>
+    <string name="notif_channel_desc">Notificaciones cuando una cripto supera tu umbral</string>
+    <string name="notif_title">Alerta de precio: %1$s</string>
+    <string name="notif_text_above">El precio actual %1$s ha superado tu umbral de %2$s</string>
+    <string name="notif_text_below">El precio actual %1$s ha bajado de tu umbral de %2$s</string>
+</resources>

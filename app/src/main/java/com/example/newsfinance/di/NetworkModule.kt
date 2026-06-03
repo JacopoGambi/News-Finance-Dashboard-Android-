@@ -31,17 +31,39 @@ object NetworkModule {
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
 
-    // Client condiviso — usato da GNews
+    // Client condiviso — usato da GNews. Ritenta sul rate limit (HTTP 429) con backoff.
     @Provides
     @Singleton
     fun provideOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .addInterceptor(rateLimitRetryInterceptor())
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
+
+    // Ritenta una richiesta sul 429 rispettando l'header Retry-After (o backoff crescente)
+    private fun rateLimitRetryInterceptor() = okhttp3.Interceptor { chain ->
+        var response = chain.proceed(chain.request())
+        var attempt = 0
+        while (response.code == 429 && attempt < MAX_RATE_LIMIT_RETRIES) {
+            val retryAfterSec = response.header("Retry-After")?.toLongOrNull()
+            response.close()
+            val backoffMs = ((retryAfterSec ?: (attempt + 1) * 2L) * 1000L)
+                .coerceAtMost(MAX_RATE_LIMIT_BACKOFF_MS)
+            try {
+                Thread.sleep(backoffMs)
+            } catch (_: InterruptedException) {
+                Thread.currentThread().interrupt()
+                break
+            }
+            attempt++
+            response = chain.proceed(chain.request())
+        }
+        response
+    }
 
     // Client dedicato a CoinGecko — aggiunge l'header Demo API key
     // e ritenta in caso di rate limit (HTTP 429) con backoff.
@@ -52,26 +74,7 @@ object NetworkModule {
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
-        .addInterceptor { chain ->
-            // Ritenta sul 429 rispettando l'header Retry-After (o backoff crescente)
-            var response = chain.proceed(chain.request())
-            var attempt = 0
-            while (response.code == 429 && attempt < MAX_RATE_LIMIT_RETRIES) {
-                val retryAfterSec = response.header("Retry-After")?.toLongOrNull()
-                response.close()
-                val backoffMs = ((retryAfterSec ?: (attempt + 1) * 2L) * 1000L)
-                    .coerceAtMost(MAX_RATE_LIMIT_BACKOFF_MS)
-                try {
-                    Thread.sleep(backoffMs)
-                } catch (_: InterruptedException) {
-                    Thread.currentThread().interrupt()
-                    break
-                }
-                attempt++
-                response = chain.proceed(chain.request())
-            }
-            response
-        }
+        .addInterceptor(rateLimitRetryInterceptor())
         .addInterceptor { chain ->
             val apiKey = Constants.COINGECKO_API_KEY
             val request = if (apiKey.isNotBlank()) {

@@ -34,9 +34,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.newsfinance.R
 import com.example.newsfinance.domain.model.Article
 import com.example.newsfinance.domain.model.Crypto
 import com.example.newsfinance.ui.components.AddAlertDialog
@@ -70,12 +72,12 @@ fun FavoritesScreen(
             Tab(
                 selected = selectedTab == 0,
                 onClick = { selectedTab = 0 },
-                text = { Text("Notizie") }
+                text = { Text(stringResource(R.string.favorites_tab_news)) }
             )
             Tab(
                 selected = selectedTab == 1,
                 onClick = { selectedTab = 1 },
-                text = { Text("Crypto") }
+                text = { Text(stringResource(R.string.favorites_tab_crypto)) }
             )
         }
 
@@ -104,7 +106,7 @@ private fun ArticlesTab(
     if (articles.isEmpty()) {
         EmptyState(
             icon = Icons.Filled.Bookmarks,
-            message = "Nessun articolo salvato"
+            message = stringResource(R.string.favorites_empty_articles)
         )
     } else {
         LazyColumn(
@@ -137,7 +139,7 @@ private fun CryptosTab(
     if (cryptos.isEmpty()) {
         EmptyState(
             icon = Icons.Filled.ShowChart,
-            message = "Nessuna crypto in watchlist"
+            message = stringResource(R.string.favorites_empty_crypto)
         )
     } else {
         LazyColumn(
@@ -199,7 +201,7 @@ private fun SwipeToDismissItem(
                 if (state.targetValue == SwipeToDismissBoxValue.EndToStart) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
-                        contentDescription = "Elimina",
+                        contentDescription = stringResource(R.string.action_delete),
                         tint = MaterialTheme.colorScheme.onErrorContainer
                     )
                 }

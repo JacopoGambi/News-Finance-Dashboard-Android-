@@ -1,8 +1,10 @@
 package com.example.newsfinance.ui.markets
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.newsfinance.R
 import com.example.newsfinance.data.remote.api.CoinGeckoService
 import com.example.newsfinance.domain.model.CryptoAlert
 import com.example.newsfinance.domain.repository.AlertRepository
@@ -16,12 +18,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class ChartTimeRange(val label: String, val days: Int) {
-    ONE_DAY("1G", 1),
-    ONE_WEEK("1S", 7),
-    ONE_MONTH("1M", 30),
-    THREE_MONTHS("3M", 90),
-    ONE_YEAR("1A", 365)
+enum class ChartTimeRange(@StringRes val labelRes: Int, val days: Int) {
+    ONE_DAY(R.string.range_1d, 1),
+    ONE_WEEK(R.string.range_1w, 7),
+    ONE_MONTH(R.string.range_1m, 30),
+    THREE_MONTHS(R.string.range_3m, 90),
+    ONE_YEAR(R.string.range_1y, 365)
 }
 
 data class CryptoDetailUiState(
