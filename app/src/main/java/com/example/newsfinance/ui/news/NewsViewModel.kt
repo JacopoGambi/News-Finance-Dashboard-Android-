@@ -43,6 +43,9 @@ class NewsViewModel @Inject constructor(
     private val _localOnly = MutableStateFlow(false)
     private val _locality = MutableStateFlow<String?>(null)
 
+    // Incrementato per forzare un nuovo tentativo di caricamento (pulsante "Riprova")
+    private val _refreshTick = MutableStateFlow(0)
+
     private data class NewsQuery(
         val query: String,
         val category: String,
@@ -69,8 +72,9 @@ class NewsViewModel @Inject constructor(
         _effectiveQuery,
         _selectedCategory,
         _localOnly,
-        _locality
-    ) { query, category, localOnly, locality ->
+        _locality,
+        _refreshTick
+    ) { query, category, localOnly, locality, _ ->
         NewsQuery(query, category, localOnly, locality)
     }
         .flatMapLatest { params ->
@@ -128,6 +132,11 @@ class NewsViewModel @Inject constructor(
 
     fun onSearchQueryChanged(query: String) {
         _rawQuery.value = query
+    }
+
+    /** Riprova il caricamento dopo un errore. */
+    fun retry() {
+        _refreshTick.value++
     }
 
     fun onToggleFavorite(article: Article) {

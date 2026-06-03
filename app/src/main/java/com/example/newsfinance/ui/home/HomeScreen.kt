@@ -25,7 +25,6 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -49,6 +48,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.newsfinance.ui.components.ArticleCard
 import com.example.newsfinance.ui.components.CryptoCard
+import com.example.newsfinance.ui.components.ErrorState
+import com.example.newsfinance.ui.components.LoadingState
 import com.example.newsfinance.util.LocationHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -101,9 +102,18 @@ fun HomeScreen(
     val isInitialLoad = uiState.isLoading && uiState.articles.isEmpty() && uiState.cryptos.isEmpty()
     val isRefreshing = uiState.isLoading && !isInitialLoad
 
+    val isEmptyError = uiState.error != null &&
+        uiState.articles.isEmpty() && uiState.cryptos.isEmpty()
+
     Box(modifier = modifier.fillMaxSize()) {
         if (isInitialLoad) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            LoadingState()
+        } else if (isEmptyError) {
+            // Errore senza dati in cache: schermata di errore con possibilità di riprovare
+            ErrorState(
+                message = uiState.error ?: "Errore di caricamento",
+                onRetry = viewModel::refresh
+            )
         } else {
             PullToRefreshBox(
                 isRefreshing = isRefreshing,

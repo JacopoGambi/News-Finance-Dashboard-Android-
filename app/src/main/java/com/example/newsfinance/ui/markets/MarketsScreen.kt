@@ -9,7 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CurrencyBitcoin
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +32,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.newsfinance.domain.model.Crypto
 import com.example.newsfinance.ui.components.AddAlertDialog
 import com.example.newsfinance.ui.components.CryptoCard
+import com.example.newsfinance.ui.components.EmptyState
+import com.example.newsfinance.ui.components.ErrorState
+import com.example.newsfinance.ui.components.LoadingState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,9 +90,13 @@ fun MarketsScreen(
 
             // Contenuto principale
             if (isInitialLoad) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+                LoadingState()
+            } else if (uiState.cryptos.isEmpty() && uiState.error != null) {
+                // Errore senza dati in cache: schermata di errore con possibilità di riprovare
+                ErrorState(
+                    message = uiState.error ?: "Errore di caricamento",
+                    onRetry = viewModel::refresh
+                )
             } else {
                 PullToRefreshBox(
                     isRefreshing = isRefreshing,
@@ -96,16 +104,10 @@ fun MarketsScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     if (uiState.cryptos.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Nessuna crypto disponibile.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        EmptyState(
+                            icon = Icons.Filled.CurrencyBitcoin,
+                            message = "Nessuna crypto disponibile."
+                        )
                     } else {
                         LazyColumn(
                             contentPadding = PaddingValues(

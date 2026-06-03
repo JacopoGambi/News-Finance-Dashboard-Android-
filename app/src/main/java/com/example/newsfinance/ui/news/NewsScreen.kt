@@ -16,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -41,6 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.newsfinance.ui.components.ArticleCard
+import com.example.newsfinance.ui.components.EmptyState
+import com.example.newsfinance.ui.components.ErrorState
+import com.example.newsfinance.ui.components.LoadingState
 import com.example.newsfinance.util.LocationHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -177,14 +179,14 @@ fun NewsScreen(
             // Contenuto principale
             Box(modifier = Modifier.fillMaxSize()) {
                 when {
-                    uiState.isLoading -> CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
+                    uiState.isLoading -> LoadingState()
+                    uiState.articles.isEmpty() && uiState.error != null -> ErrorState(
+                        message = uiState.error ?: "Errore di caricamento",
+                        onRetry = viewModel::retry
                     )
-                    uiState.articles.isEmpty() -> Text(
-                        text = "Nessun articolo trovato.",
-                        modifier = Modifier.align(Alignment.Center),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    uiState.articles.isEmpty() -> EmptyState(
+                        icon = Icons.Default.Search,
+                        message = "Nessun articolo trovato."
                     )
                     else -> LazyColumn(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),

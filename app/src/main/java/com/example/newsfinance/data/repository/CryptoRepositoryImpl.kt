@@ -10,28 +10,29 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class CryptoRepositoryImpl @Inject constructor(
     private val coinGeckoService: CoinGeckoService
 ) : CryptoRepository {
 
+    private data class CacheEntry(val data: List<Crypto>, val timestamp: Long)
+
     private val mutex = Mutex()
-    private var cachedCurrency: String? = null
-    private var cachedData: List<Crypto> = emptyList()
-    private var cacheTimestamp: Long = 0L
+    // Cache per-valuta: ogni valuta mantiene il proprio ultimo dato, così il
+    // fallback su errore (es. 429) funziona anche se le schermate usano valute diverse.
+    private val cache = mutableMapOf<String, CacheEntry>()
 
     override fun getMarkets(vsCurrency: String): Flow<Result<List<Crypto>>> = flow {
         emit(Result.Loading)
 
         val now = System.currentTimeMillis()
-        val cached = mutex.withLock {
-            if (cachedCurrency == vsCurrency && cachedData.isNotEmpty()
-                && now - cacheTimestamp < CACHE_TTL_MS
-            ) cachedData else null
+        val fresh = mutex.withLock {
+            cache[vsCurrency]?.takeIf { it.data.isNotEmpty() && now - it.timestamp < CACHE_TTL_MS }?.data
         }
-
-        if (cached != null) {
-            emit(Result.Success(cached))
+        if (fresh != null) {
+            emit(Result.Success(fresh))
             return@flow
         }
 
@@ -42,16 +43,10 @@ class CryptoRepositoryImpl @Inject constructor(
                 page = 1
             )
             val cryptos = response.mapNotNull { it.toDomain() }
-            mutex.withLock {
-                cachedCurrency = vsCurrency
-                cachedData = cryptos
-                cacheTimestamp = System.currentTimeMillis()
-            }
+            mutex.withLock { cache[vsCurrency] = CacheEntry(cryptos, System.currentTimeMillis()) }
             emit(Result.Success(cryptos))
         } catch (t: Throwable) {
-            val fallback = mutex.withLock {
-                if (cachedCurrency == vsCurrency && cachedData.isNotEmpty()) cachedData else null
-            }
+            val fallback = mutex.withLock { cache[vsCurrency]?.data?.takeIf { it.isNotEmpty() } }
             if (fallback != null) {
                 emit(Result.Success(fallback))
             } else {
