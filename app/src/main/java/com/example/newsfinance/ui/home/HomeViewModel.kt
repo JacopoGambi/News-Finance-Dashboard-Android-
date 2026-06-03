@@ -47,13 +47,14 @@ class HomeViewModel @Inject constructor(
     fun setDetectedCountry(countryCode: String) {
         detectedCountry = countryCode
         _uiState.value = _uiState.value.copy(detectedCountry = countryCode)
+        loadData()   // ricarica le notizie con il paese rilevato
     }
 
     private fun loadData() {
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             combine(
-                getLocalNewsUseCase(NEWS_COUNTRY),
+                getLocalNewsUseCase(detectedCountry),
                 getCryptoMarketsUseCase("usd")
             ) { newsResult, cryptoResult ->
                 Pair(newsResult, cryptoResult)
@@ -76,9 +77,5 @@ class HomeViewModel @Inject constructor(
                 )
             }
         }
-    }
-
-    private companion object {
-        const val NEWS_COUNTRY = "us"
     }
 }

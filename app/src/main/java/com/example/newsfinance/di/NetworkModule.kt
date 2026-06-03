@@ -31,7 +31,7 @@ object NetworkModule {
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
 
-    // Client condiviso — usato da NewsAPI
+    // Client condiviso — usato da GNews
     @Provides
     @Singleton
     fun provideOkHttpClient(
@@ -93,7 +93,7 @@ object NetworkModule {
     @NewsRetrofit
     fun provideNewsRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit.Builder()
-            .baseUrl(Constants.NEWS_API_BASE_URL)
+            .baseUrl(Constants.GNEWS_API_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

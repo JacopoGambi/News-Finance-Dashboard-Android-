@@ -9,6 +9,6 @@ import javax.inject.Inject
 class GetNewsByCategoryUseCase @Inject constructor(
     private val newsRepository: NewsRepository
 ) {
-    operator fun invoke(category: String, country: String): Flow<Result<List<Article>>> =
+    operator fun invoke(category: String, country: String?): Flow<Result<List<Article>>> =
         newsRepository.getTopHeadlines(country = country, category = category)
 }

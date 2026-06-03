@@ -9,6 +9,6 @@ import javax.inject.Inject
 class GetLocalNewsUseCase @Inject constructor(
     private val newsRepository: NewsRepository
 ) {
-    operator fun invoke(countryCode: String): Flow<Result<List<Article>>> =
+    operator fun invoke(countryCode: String?): Flow<Result<List<Article>>> =
         newsRepository.getTopHeadlines(country = countryCode, category = null)
 }

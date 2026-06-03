@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface NewsRepository {
 
-    fun getTopHeadlines(country: String, category: String?): Flow<Result<List<Article>>>
+    fun getTopHeadlines(country: String?, category: String?): Flow<Result<List<Article>>>
 
     fun searchNews(query: String): Flow<Result<List<Article>>>
 }

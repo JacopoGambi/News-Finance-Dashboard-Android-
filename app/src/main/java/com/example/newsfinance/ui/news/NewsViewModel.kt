@@ -25,6 +25,8 @@ data class NewsUiState(
     val articles: List<Article> = emptyList(),
     val selectedCategory: String = "general",
     val searchQuery: String = "",
+    val localOnly: Boolean = false,
+    val locality: String? = null,
     val error: String? = null,
     val favoriteIds: Set<String> = emptySet()
 )
@@ -38,6 +40,15 @@ class NewsViewModel @Inject constructor(
 
     private val _rawQuery = MutableStateFlow("")
     private val _selectedCategory = MutableStateFlow("general")
+    private val _localOnly = MutableStateFlow(false)
+    private val _locality = MutableStateFlow<String?>(null)
+
+    private data class NewsQuery(
+        val query: String,
+        val category: String,
+        val localOnly: Boolean,
+        val locality: String?
+    )
 
     // Debounce 500ms sulla ricerca, ma svuotamento immediato (es. selezione categoria)
     private val _effectiveQuery = _rawQuery.transformLatest { query ->
@@ -56,31 +67,33 @@ class NewsViewModel @Inject constructor(
 
     val uiState: StateFlow<NewsUiState> = combine(
         _effectiveQuery,
-        _selectedCategory
-    ) { query, category -> Pair(query, category) }
-        .flatMapLatest { (query, category) ->
-            val flow = if (query.isBlank()) {
-                getNewsByCategoryUseCase(category = category, country = "us")
-            } else {
-                searchNewsUseCase(query = query)
+        _selectedCategory,
+        _localOnly,
+        _locality
+    ) { query, category, localOnly, locality ->
+        NewsQuery(query, category, localOnly, locality)
+    }
+        .flatMapLatest { params ->
+            val localActive = params.localOnly && !params.locality.isNullOrBlank()
+            val flow = when {
+                // Ricerca esplicita dell'utente: ha priorità
+                params.query.isNotBlank() -> searchNewsUseCase(query = params.query)
+                // Notizie locali: cerca per nome della località rilevata
+                localActive -> searchNewsUseCase(query = params.locality!!)
+                // Default: top headlines per categoria, nessun filtro geografico
+                else -> getNewsByCategoryUseCase(category = params.category, country = null)
             }
             flow.map { result ->
+                val base = NewsUiState(
+                    selectedCategory = params.category,
+                    searchQuery = params.query,
+                    localOnly = params.localOnly,
+                    locality = params.locality
+                )
                 when (result) {
-                    is Result.Loading -> NewsUiState(
-                        isLoading = true,
-                        selectedCategory = category,
-                        searchQuery = query
-                    )
-                    is Result.Success -> NewsUiState(
-                        articles = result.data,
-                        selectedCategory = category,
-                        searchQuery = query
-                    )
-                    is Result.Error -> NewsUiState(
-                        error = result.message,
-                        selectedCategory = category,
-                        searchQuery = query
-                    )
+                    is Result.Loading -> base.copy(isLoading = true)
+                    is Result.Success -> base.copy(articles = result.data)
+                    is Result.Error -> base.copy(error = result.message)
                 }
             }
         }
@@ -101,6 +114,16 @@ class NewsViewModel @Inject constructor(
     fun onCategorySelected(category: String) {
         _rawQuery.value = ""           // svuota immediatamente la ricerca
         _selectedCategory.value = category
+    }
+
+    /** Registra la località rilevata dalla posizione (es. "Bologna"). */
+    fun setLocality(name: String) {
+        _locality.value = name
+    }
+
+    /** Attiva/disattiva il filtro per notizie locali. */
+    fun setLocalNews(enabled: Boolean) {
+        _localOnly.value = enabled
     }
 
     fun onSearchQueryChanged(query: String) {

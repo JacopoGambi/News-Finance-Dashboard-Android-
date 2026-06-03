@@ -4,51 +4,48 @@ import com.example.newsfinance.domain.model.Article
 import com.google.gson.annotations.SerializedName
 
 /**
- * Risposta top-level di NewsAPI.
+ * Risposta top-level di GNews.
  */
 data class NewsResponseDto(
-    @SerializedName("status") val status: String?,
-    @SerializedName("totalResults") val totalResults: Int?,
+    @SerializedName("totalArticles") val totalArticles: Int?,
     @SerializedName("articles") val articles: List<ArticleDto>?
 )
 
 /**
- * Singolo articolo restituito da NewsAPI.
+ * Singolo articolo restituito da GNews.
  */
 data class ArticleDto(
     @SerializedName("source") val source: SourceDto?,
-    @SerializedName("author") val author: String?,
     @SerializedName("title") val title: String?,
     @SerializedName("description") val description: String?,
     @SerializedName("url") val url: String?,
-    @SerializedName("urlToImage") val urlToImage: String?,
+    @SerializedName("image") val image: String?,
     @SerializedName("publishedAt") val publishedAt: String?,
     @SerializedName("content") val content: String?
 )
 
 /**
- * Sorgente dell'articolo (id opzionale, name di solito presente).
+ * Sorgente dell'articolo (GNews espone name e url).
  */
 data class SourceDto(
-    @SerializedName("id") val id: String?,
-    @SerializedName("name") val name: String?
+    @SerializedName("name") val name: String?,
+    @SerializedName("url") val url: String?
 )
 
 /**
  * Mapper DTO -> dominio.
- * NewsAPI non espone la categoria nel JSON: viene passata dal caller (repository/use case).
+ * GNews non espone la categoria nel JSON: viene passata dal caller (repository/use case).
  * Articoli con url nullo vengono scartati (id = url).
  */
 fun ArticleDto.toDomain(category: String? = null): Article? {
     val safeUrl = url ?: return null
     val safeTitle = title ?: return null
-    if (safeTitle == "[Removed]") return null
     return Article(
         id = safeUrl,
         title = safeTitle,
         description = description,
         url = safeUrl,
-        imageUrl = urlToImage,
+        imageUrl = image,
         publishedAt = publishedAt,
         sourceName = source?.name,
         category = category

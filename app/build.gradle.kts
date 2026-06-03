@@ -28,14 +28,14 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField(
-            "String", "NEWS_API_KEY",
-            "\"${localProperties.getProperty("NEWS_API_KEY") ?: ""}\""
+            "String", "GNEWS_API_KEY",
+            "\"${localProperties.getProperty("GNEWS_API_KEY") ?: ""}\""
         )
         buildConfigField(
             "String", "COINGECKO_API_KEY",
             "\"${localProperties.getProperty("COINGECKO_API_KEY") ?: ""}\""
         )
-        buildConfigField("String", "NEWS_API_BASE_URL",    "\"https://newsapi.org/v2/\"")
+        buildConfigField("String", "GNEWS_API_BASE_URL",   "\"https://gnews.io/api/v4/\"")
         buildConfigField("String", "COINGECKO_BASE_URL",  "\"https://api.coingecko.com/api/v3/\"")
     }
 
