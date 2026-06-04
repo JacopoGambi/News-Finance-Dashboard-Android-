@@ -61,7 +61,6 @@
     <string name="interval_60">60 minutes</string>
     <string name="settings_section_language">Language</string>
     <string name="settings_language">App language</string>
-    <string name="settings_country">Local news country</string>
     <string name="lang_it">Italian</string>
     <string name="lang_en">English</string>
     <string name="lang_es">Spanish</string>

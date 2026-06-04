@@ -62,14 +62,14 @@ class HomeViewModel @Inject constructor(
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             prefsStore.preferences
-                .map { it.preferredCurrency to it.preferredCountry }
+                .map { it.preferredCurrency }
                 .distinctUntilChanged()
-                .flatMapLatest { (currency, prefCountry) ->
-                    // Paese effettivo: geolocalizzazione se disponibile, altrimenti
-                    // quello scelto nelle impostazioni.
-                    val country = detectedCountry ?: prefCountry
+                .flatMapLatest { currency ->
+                    // Se la posizione è stata rilevata, notizie del paese; altrimenti
+                    // notizie globali nella lingua scelta (la Home non resta mai vuota).
+                    val newsFlow = getLocalNewsUseCase(detectedCountry)
                     combine(
-                        getLocalNewsUseCase(country),
+                        newsFlow,
                         getCryptoMarketsUseCase(currency)
                     ) { newsResult, cryptoResult ->
                         Triple(currency, newsResult, cryptoResult)

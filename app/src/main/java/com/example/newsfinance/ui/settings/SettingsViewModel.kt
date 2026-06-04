@@ -26,10 +26,6 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { prefsStore.updateCurrency(currency) }
     }
 
-    fun onCountryChanged(country: String) {
-        viewModelScope.launch { prefsStore.updateCountry(country) }
-    }
-
     fun onNotificationsToggled(enabled: Boolean) {
         viewModelScope.launch {
             prefsStore.updateNotificationsEnabled(enabled)

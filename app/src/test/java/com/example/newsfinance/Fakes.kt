@@ -25,8 +25,6 @@ class FakeUserPreferencesDataStore(
 
     override suspend fun updateCurrency(currency: String) =
         state.update { it.copy(preferredCurrency = currency) }
-    override suspend fun updateCountry(country: String) =
-        state.update { it.copy(preferredCountry = country) }
     override suspend fun updateNotificationsEnabled(enabled: Boolean) =
         state.update { it.copy(notificationsEnabled = enabled) }
     override suspend fun updateIntervalMinutes(minutes: Int) =

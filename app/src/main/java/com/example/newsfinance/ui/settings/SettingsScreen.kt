@@ -55,16 +55,6 @@ private val languages = listOf(
     "fr" to R.string.lang_fr
 )
 
-// Paesi per le notizie locali quando la geolocalizzazione non è disponibile
-private val countries = listOf(
-    "it" to "IT",
-    "us" to "US",
-    "gb" to "GB",
-    "fr" to "FR",
-    "es" to "ES",
-    "de" to "DE"
-)
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun SettingsScreen(
@@ -103,13 +93,6 @@ fun SettingsScreen(
                 )
                 viewModel.onLanguageChanged(tag)
             }
-        )
-
-        SettingsDropdown(
-            label = stringResource(R.string.settings_country),
-            options = countries,
-            selectedKey = prefs.preferredCountry,
-            onSelected = viewModel::onCountryChanged
         )
 
         HorizontalDivider()
