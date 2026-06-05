@@ -27,7 +27,11 @@ data class HomeUiState(
     val cryptos: List<Crypto> = emptyList(),
     val error: String? = null,
     val detectedCountry: String? = null,
-    val currency: String = "usd"
+    val currency: String = "usd",
+    // Aggregato di mercato per la hero card della Home
+    val marketTotalCap: Double? = null,
+    val marketAvgChange: Double? = null,
+    val marketSparkline: List<Double>? = null
 )
 
 @HiltViewModel
@@ -79,19 +83,29 @@ class HomeViewModel @Inject constructor(
                     val isLoading =
                         newsResult is Result.Loading || cryptoResult is Result.Loading
                     val articles = (newsResult as? Result.Success)?.data.orEmpty()
-                    val cryptos = (cryptoResult as? Result.Success)?.data.orEmpty().take(5)
+                    val allCryptos = (cryptoResult as? Result.Success)?.data.orEmpty()
+                    val cryptos = allCryptos.take(5)
                     val error = when {
                         newsResult is Result.Error -> newsResult.message
                         cryptoResult is Result.Error -> cryptoResult.message
                         else -> null
                     }
+                    // Aggregato di mercato calcolato sui dati caricati (non nella UI)
+                    val totalCap = allCryptos.mapNotNull { it.marketCap }
+                        .takeIf { it.isNotEmpty() }?.sum()
+                    val avgChange = allCryptos.mapNotNull { it.priceChangePercentage24h }
+                        .takeIf { it.isNotEmpty() }?.average()
+                    val sparkline = allCryptos.firstOrNull()?.sparkline7d
                     _uiState.value = HomeUiState(
                         isLoading = isLoading,
                         articles = articles,
                         cryptos = cryptos,
                         error = error,
                         detectedCountry = detectedCountry,
-                        currency = currency
+                        currency = currency,
+                        marketTotalCap = totalCap,
+                        marketAvgChange = avgChange,
+                        marketSparkline = sparkline
                     )
                 }
         }

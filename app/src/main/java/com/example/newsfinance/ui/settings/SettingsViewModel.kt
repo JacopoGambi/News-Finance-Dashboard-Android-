@@ -51,4 +51,8 @@ class SettingsViewModel @Inject constructor(
     fun onLanguageChanged(lang: String) {
         viewModelScope.launch { prefsStore.updateLang(lang) }
     }
+
+    fun onThemeModeChanged(mode: String) {
+        viewModelScope.launch { prefsStore.updateThemeMode(mode) }
+    }
 }

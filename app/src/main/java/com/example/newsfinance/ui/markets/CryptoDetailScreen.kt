@@ -15,6 +15,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -23,11 +26,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -40,8 +45,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.newsfinance.R
-import com.example.newsfinance.ui.theme.NegativeRed
-import com.example.newsfinance.ui.theme.PositiveGreen
+import com.example.newsfinance.ui.components.ChangePill
+import com.example.newsfinance.ui.theme.MonoNumbers
+import com.example.newsfinance.ui.theme.appCardBorder
+import com.example.newsfinance.ui.theme.appCardColors
 import com.example.newsfinance.util.CurrencyFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,7 +91,10 @@ fun CryptoDetailScreen(
                         contentDescription = stringResource(R.string.action_back)
                     )
                 }
-            }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent
+            )
         )
 
         Column(
@@ -99,6 +109,7 @@ fun CryptoDetailScreen(
                 Text(
                     text = CurrencyFormatter.format(uiState.currentPrice, uiState.currency),
                     style = MaterialTheme.typography.headlineMedium,
+                    fontFamily = MonoNumbers,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -116,12 +127,18 @@ fun CryptoDetailScreen(
             }
             val rangeLabel = stringResource(uiState.selectedRange.labelRes)
             if (rangeChange != null) {
-                val positive = rangeChange >= 0
-                Text(
-                    text = "${if (positive) "+" else ""}${"%.2f".format(rangeChange)}% ($rangeLabel)",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (positive) PositiveGreen else NegativeRed
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
+                    ChangePill(change = rangeChange)
+                    Text(
+                        text = rangeLabel,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -142,30 +159,39 @@ fun CryptoDetailScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Area del grafico
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(260.dp),
-                contentAlignment = Alignment.Center
+            // Area del grafico avvolta in una card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = appCardColors(),
+                border = appCardBorder(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                val chartError = uiState.error
-                when {
-                    uiState.isLoading -> CircularProgressIndicator()
-                    chartError != null -> Text(
-                        text = stringResource(R.string.error_loading),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    uiState.chartPoints.isEmpty() -> Text(
-                        text = stringResource(R.string.chart_no_data),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    else -> PriceLineChart(
-                        points = uiState.chartPoints,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(260.dp)
+                        .padding(12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val chartError = uiState.error
+                    when {
+                        uiState.isLoading -> CircularProgressIndicator()
+                        chartError != null -> Text(
+                            text = stringResource(R.string.error_loading),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        uiState.chartPoints.isEmpty() -> Text(
+                            text = stringResource(R.string.chart_no_data),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        else -> PriceLineChart(
+                            points = uiState.chartPoints,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
 
@@ -186,24 +212,48 @@ fun CryptoDetailScreen(
                 )
             } else {
                 uiState.alerts.forEach { alert ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = appCardColors(),
+                        border = appCardBorder(),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
-                        val direction = stringResource(
-                            if (alert.above) R.string.alert_above else R.string.alert_below
-                        )
-                        Text(
-                            text = "$direction ${CurrencyFormatter.format(alert.threshold, uiState.currency)}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        IconButton(onClick = { viewModel.onRemoveAlert(alert.id) }) {
-                            Icon(
-                                imageVector = Icons.Filled.Delete,
-                                contentDescription = stringResource(R.string.detail_remove_alert),
-                                tint = MaterialTheme.colorScheme.error
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 14.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val direction = stringResource(
+                                if (alert.above) R.string.alert_above else R.string.alert_below
                             )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = direction,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Text(
+                                    text = CurrencyFormatter.format(alert.threshold, uiState.currency),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontFamily = MonoNumbers,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+                            IconButton(onClick = { viewModel.onRemoveAlert(alert.id) }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Delete,
+                                    contentDescription = stringResource(R.string.detail_remove_alert),
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
                         }
                     }
                 }

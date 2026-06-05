@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,7 +28,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -101,12 +102,17 @@ fun NewsScreen(
 
     Scaffold(
         modifier = modifier,
-        topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.nav_news)) })
-        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+
+            Text(
+                text = stringResource(R.string.nav_news),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
+            )
 
             // Barra di ricerca
             OutlinedTextField(
@@ -133,50 +139,51 @@ fun NewsScreen(
                 shape = MaterialTheme.shapes.large
             )
 
-            // Filtri (visibili solo quando non si sta cercando)
+            // Filtri (visibili solo quando non si sta cercando): chip locali + categorie
+            // sulla stessa riga scorrevole.
             if (uiState.searchQuery.isEmpty()) {
-                // Toggle notizie locali: di default le notizie non sono filtrate per posizione
-                FilterChip(
-                    selected = uiState.localOnly,
-                    onClick = {
-                        if (uiState.localOnly) {
-                            // Disattiva il filtro: torna a tutte le notizie
-                            viewModel.setLocalNews(false)
-                            wantLocalNews = false
-                        } else {
-                            wantLocalNews = true
-                            if (!locationPermissionState.status.isGranted) {
-                                locationPermissionState.launchPermissionRequest()
-                            }
-                        }
-                    },
-                    label = {
-                        val place = uiState.locality
-                        Text(
-                            if (uiState.localOnly && place != null) {
-                                stringResource(R.string.news_local_with_place, place)
-                            } else {
-                                stringResource(R.string.news_local)
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    // Toggle notizie locali: di default le notizie non sono filtrate per posizione
+                    item {
+                        FilterChip(
+                            selected = uiState.localOnly,
+                            onClick = {
+                                if (uiState.localOnly) {
+                                    viewModel.setLocalNews(false)
+                                    wantLocalNews = false
+                                } else {
+                                    wantLocalNews = true
+                                    if (!locationPermissionState.status.isGranted) {
+                                        locationPermissionState.launchPermissionRequest()
+                                    }
+                                }
+                            },
+                            label = {
+                                val place = uiState.locality
+                                Text(
+                                    if (uiState.localOnly && place != null) {
+                                        stringResource(R.string.news_local_with_place, place)
+                                    } else {
+                                        stringResource(R.string.news_local)
+                                    }
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.LocationOn,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
                             }
                         )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = null,
-                            modifier = Modifier.size(FilterChipDefaults.IconSize)
-                        )
-                    },
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
+                    }
 
-                // Le categorie non si applicano alle notizie locali (ricerca per località)
-                if (!uiState.localOnly) {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    ) {
+                    // Le categorie non si applicano alle notizie locali (ricerca per località)
+                    if (!uiState.localOnly) {
                         items(CATEGORIES) { (key, labelRes) ->
                             FilterChip(
                                 selected = uiState.selectedCategory == key,

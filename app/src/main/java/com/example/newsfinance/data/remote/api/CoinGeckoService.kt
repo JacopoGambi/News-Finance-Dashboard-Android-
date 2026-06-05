@@ -12,7 +12,8 @@ interface CoinGeckoService {
     suspend fun getMarkets(
         @Query("vs_currency") vsCurrency: String,
         @Query("per_page") perPage: Int,
-        @Query("page") page: Int
+        @Query("page") page: Int,
+        @Query("sparkline") sparkline: Boolean = true
     ): List<CryptoDto>
 
     @GET("coins/markets")

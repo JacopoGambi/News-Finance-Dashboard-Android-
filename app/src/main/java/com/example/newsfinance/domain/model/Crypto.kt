@@ -9,5 +9,7 @@ data class Crypto(
     val marketCap: Double?,
     val marketCapRank: Int?,
     val priceChangePercentage24h: Double?,
-    val lastUpdated: String?
+    val lastUpdated: String?,
+    // Prezzi degli ultimi 7 giorni per la mini-sparkline; null se non disponibili.
+    val sparkline7d: List<Double>? = null
 )

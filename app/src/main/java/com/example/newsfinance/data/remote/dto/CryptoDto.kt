@@ -12,7 +12,12 @@ data class CryptoDto(
     @SerializedName("market_cap") val marketCap: Double?,
     @SerializedName("market_cap_rank") val marketCapRank: Int?,
     @SerializedName("price_change_percentage_24h") val priceChangePercentage24h: Double?,
-    @SerializedName("last_updated") val lastUpdated: String?
+    @SerializedName("last_updated") val lastUpdated: String?,
+    @SerializedName("sparkline_in_7d") val sparklineIn7d: SparklineDto? = null
+)
+
+data class SparklineDto(
+    @SerializedName("price") val price: List<Double>? = null
 )
 
 fun CryptoDto.toDomain(): Crypto? {
@@ -28,6 +33,7 @@ fun CryptoDto.toDomain(): Crypto? {
         marketCap = marketCap,
         marketCapRank = marketCapRank,
         priceChangePercentage24h = priceChangePercentage24h,
-        lastUpdated = lastUpdated
+        lastUpdated = lastUpdated,
+        sparkline7d = sparklineIn7d?.price?.takeIf { it.isNotEmpty() }
     )
 }

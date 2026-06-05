@@ -21,7 +21,9 @@ data class UserPreferences(
     val notificationsEnabled: Boolean = true,
     val updateIntervalMinutes: Int = 30,
     // Lingua scelta per le notizie. Vuota = segui la lingua di sistema.
-    val preferredLang: String = ""
+    val preferredLang: String = "",
+    // Tema dell'app: "system" | "light" | "dark"
+    val themeMode: String = "system"
 )
 
 /**
@@ -34,6 +36,7 @@ interface UserPreferencesDataStore {
     suspend fun updateNotificationsEnabled(enabled: Boolean)
     suspend fun updateIntervalMinutes(minutes: Int)
     suspend fun updateLang(lang: String)
+    suspend fun updateThemeMode(mode: String)
 }
 
 @Singleton
@@ -45,6 +48,7 @@ class UserPreferencesDataStoreImpl @Inject constructor(
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
         val UPDATE_INTERVAL_MINUTES = intPreferencesKey("update_interval_minutes")
         val PREFERRED_LANG = stringPreferencesKey("preferred_lang")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
     }
 
     override val preferences: Flow<UserPreferences> = context.dataStore.data.map { prefs ->
@@ -52,7 +56,8 @@ class UserPreferencesDataStoreImpl @Inject constructor(
             preferredCurrency = prefs[Keys.PREFERRED_CURRENCY] ?: "usd",
             notificationsEnabled = prefs[Keys.NOTIFICATIONS_ENABLED] ?: true,
             updateIntervalMinutes = prefs[Keys.UPDATE_INTERVAL_MINUTES] ?: 30,
-            preferredLang = prefs[Keys.PREFERRED_LANG] ?: ""
+            preferredLang = prefs[Keys.PREFERRED_LANG] ?: "",
+            themeMode = prefs[Keys.THEME_MODE] ?: "system"
         )
     }
 
@@ -70,5 +75,9 @@ class UserPreferencesDataStoreImpl @Inject constructor(
 
     override suspend fun updateLang(lang: String) {
         context.dataStore.edit { it[Keys.PREFERRED_LANG] = lang }
+    }
+
+    override suspend fun updateThemeMode(mode: String) {
+        context.dataStore.edit { it[Keys.THEME_MODE] = mode }
     }
 }

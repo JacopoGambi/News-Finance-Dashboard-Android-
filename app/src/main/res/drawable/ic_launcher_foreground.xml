@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Linea di base -->
+    <path
+        android:pathData="M26,80 L82,80"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="4"
+        android:strokeAlpha="0.45"
+        android:strokeLineCap="round" />
+    <!-- Linea di trend crescente -->
+    <path
+        android:pathData="M26,74 L48,50 L62,60 L82,34"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <!-- Punta freccia -->
+    <path
+        android:pathData="M82,34 L71,34 M82,34 L82,45"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

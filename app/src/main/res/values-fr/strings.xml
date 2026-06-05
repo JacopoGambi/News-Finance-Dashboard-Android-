@@ -20,6 +20,9 @@
     <string name="error_loading">Une erreur s\'est produite. Vérifiez votre connexion et réessayez.</string>
 
     <!-- Accueil -->
+    <string name="home_greeting">Bonjour 👋</string>
+    <string name="home_dashboard_title">Tableau de bord</string>
+    <string name="home_market_summary">Marché crypto · 24h</string>
     <string name="home_latest_news">Dernières actualités</string>
     <string name="home_top_crypto">Top Crypto</string>
     <string name="location_enable_title">Activer la localisation</string>
@@ -51,6 +54,11 @@
     <string name="favorites_empty_crypto">Aucune cryptomonnaie dans la liste</string>
 
     <!-- Réglages -->
+    <string name="settings_section_appearance">Apparence</string>
+    <string name="settings_theme">Thème</string>
+    <string name="theme_system">Système</string>
+    <string name="theme_light">Clair</string>
+    <string name="theme_dark">Sombre</string>
     <string name="settings_section_markets">Marchés</string>
     <string name="settings_currency">Devise</string>
     <string name="settings_section_notifications">Notifications</string>

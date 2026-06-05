@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.newsfinance.R
 import com.example.newsfinance.domain.model.Article
+import com.example.newsfinance.ui.theme.appCardBorder
+import com.example.newsfinance.ui.theme.appCardColors
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -55,7 +57,10 @@ fun ArticleCard(
                     context.startActivity(intent)
                 }
             },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+        colors = appCardColors(),
+        border = appCardBorder(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier

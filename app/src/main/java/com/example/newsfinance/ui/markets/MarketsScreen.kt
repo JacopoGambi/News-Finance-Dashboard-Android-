@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,7 +19,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,13 +29,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.newsfinance.R
 import com.example.newsfinance.domain.model.Crypto
 import com.example.newsfinance.ui.components.AddAlertDialog
-import com.example.newsfinance.ui.components.CryptoCard
+import com.example.newsfinance.ui.components.CryptoGroupCard
 import com.example.newsfinance.ui.components.EmptyState
 import com.example.newsfinance.ui.components.ErrorState
 import com.example.newsfinance.ui.components.LoadingState
@@ -72,12 +73,17 @@ fun MarketsScreen(
 
     Scaffold(
         modifier = modifier,
-        topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.nav_markets)) })
-        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+
+            Text(
+                text = stringResource(R.string.nav_markets),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
+            )
 
             // Selettore valuta
             Row(
@@ -124,17 +130,17 @@ fun MarketsScreen(
                                 horizontal = 16.dp,
                                 vertical = 8.dp
                             ),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            items(uiState.cryptos, key = { it.id }) { crypto ->
-                                CryptoCard(
-                                    crypto = crypto,
+                            // Righe raggruppate in un unico contenitore con divider
+                            item {
+                                CryptoGroupCard(
+                                    cryptos = uiState.cryptos,
                                     vsCurrency = uiState.selectedCurrency,
-                                    isWatchlisted = crypto.id in uiState.watchlistIds,
-                                    onToggleWatchlist = { viewModel.onToggleWatchlist(crypto) },
-                                    onBellClick = { dialogCrypto = crypto },
-                                    onClick = { onCryptoClick(crypto.id, uiState.selectedCurrency) }
+                                    watchlistIds = uiState.watchlistIds,
+                                    onToggleWatchlist = { viewModel.onToggleWatchlist(it) },
+                                    onBellClick = { dialogCrypto = it },
+                                    onClick = { onCryptoClick(it.id, uiState.selectedCurrency) }
                                 )
                             }
                         }

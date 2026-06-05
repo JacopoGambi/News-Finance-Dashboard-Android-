@@ -1,22 +1,26 @@
 package com.example.newsfinance.ui.settings
 
 import android.Manifest
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,16 +30,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.newsfinance.R
+import com.example.newsfinance.ui.theme.appCardBorder
+import com.example.newsfinance.ui.theme.appCardColors
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+
+private val themes = listOf(
+    "system" to R.string.theme_system,
+    "light" to R.string.theme_light,
+    "dark" to R.string.theme_dark
+)
 
 private val currencies = listOf(
     "usd" to "USD",
@@ -77,12 +91,29 @@ fun SettingsScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+        Text(
+            text = stringResource(R.string.nav_settings),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.padding(bottom = 2.dp)
+        )
+
+        // --- Sezione Aspetto ---
+        SectionHeader(stringResource(R.string.settings_section_appearance))
+
+        SettingsField(
+            label = stringResource(R.string.settings_theme),
+            options = themes.map { (key, res) -> key to stringResource(res) },
+            selectedKey = prefs.themeMode,
+            onSelected = viewModel::onThemeModeChanged
+        )
+
         // --- Sezione Lingua ---
         SectionHeader(stringResource(R.string.settings_section_language))
 
-        SettingsDropdown(
+        SettingsField(
             label = stringResource(R.string.settings_language),
             options = languages.map { (tag, res) -> tag to stringResource(res) },
             selectedKey = currentLanguage,
@@ -95,44 +126,51 @@ fun SettingsScreen(
             }
         )
 
-        HorizontalDivider()
-
         // --- Sezione Mercati ---
         SectionHeader(stringResource(R.string.settings_section_markets))
 
-        SettingsDropdown(
+        SettingsField(
             label = stringResource(R.string.settings_currency),
             options = currencies,
             selectedKey = prefs.preferredCurrency,
             onSelected = viewModel::onCurrencyChanged
         )
 
-        HorizontalDivider()
-
         // --- Sezione Notifiche ---
         SectionHeader(stringResource(R.string.settings_section_notifications))
 
-        Row(
+        Card(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            shape = RoundedCornerShape(14.dp),
+            colors = appCardColors(),
+            border = appCardBorder(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
-            Text(
-                stringResource(R.string.settings_enable_notifications),
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Switch(
-                checked = prefs.notificationsEnabled,
-                onCheckedChange = { enabled ->
-                    if (enabled && !notificationsPermissionState.status.isGranted) {
-                        notificationsPermissionState.launchPermissionRequest()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    stringResource(R.string.settings_enable_notifications),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Switch(
+                    checked = prefs.notificationsEnabled,
+                    onCheckedChange = { enabled ->
+                        if (enabled && !notificationsPermissionState.status.isGranted) {
+                            notificationsPermissionState.launchPermissionRequest()
+                        }
+                        viewModel.onNotificationsToggled(enabled)
                     }
-                    viewModel.onNotificationsToggled(enabled)
-                }
-            )
+                )
+            }
         }
 
-        SettingsDropdown(
+        SettingsField(
             label = stringResource(R.string.settings_update_interval),
             options = intervals.map { (k, res) -> k.toString() to stringResource(res) },
             selectedKey = prefs.updateIntervalMinutes.toString(),
@@ -145,15 +183,17 @@ fun SettingsScreen(
 @Composable
 private fun SectionHeader(title: String) {
     Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.primary
+        text = title.uppercase(),
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.ExtraBold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 2.dp, top = 10.dp, bottom = 2.dp)
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** Riga-card impostazione: etichetta piccola + valore + caret, apre un menu a tendina. */
 @Composable
-private fun SettingsDropdown(
+private fun SettingsField(
     label: String,
     options: List<Pair<String, String>>,
     selectedKey: String,
@@ -163,23 +203,48 @@ private fun SettingsDropdown(
     var expanded by remember { mutableStateOf(false) }
     val selectedLabel = options.firstOrNull { it.first == selectedKey }?.second ?: selectedKey
 
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { if (enabled) expanded = it }
-    ) {
-        OutlinedTextField(
-            value = selectedLabel,
-            onValueChange = {},
-            readOnly = true,
-            enabled = enabled,
-            label = { Text(label) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+    Box {
+        Card(
             modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth()
-        )
-        ExposedDropdownMenu(
+                .alpha(if (enabled) 1f else 0.5f)
+                .clickable(enabled = enabled) { expanded = true },
+            shape = RoundedCornerShape(14.dp),
+            colors = appCardColors(),
+            border = appCardBorder(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 10.dp)
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = selectedLabel,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+        DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
@@ -189,8 +254,7 @@ private fun SettingsDropdown(
                     onClick = {
                         onSelected(key)
                         expanded = false
-                    },
-                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                    }
                 )
             }
         }

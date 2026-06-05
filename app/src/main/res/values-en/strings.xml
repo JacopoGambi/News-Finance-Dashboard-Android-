@@ -20,6 +20,9 @@
     <string name="error_loading">Something went wrong. Check your connection and try again.</string>
 
     <!-- Home -->
+    <string name="home_greeting">Hi 👋</string>
+    <string name="home_dashboard_title">Dashboard</string>
+    <string name="home_market_summary">Crypto market · 24h</string>
     <string name="home_latest_news">Latest News</string>
     <string name="home_top_crypto">Top Crypto</string>
     <string name="location_enable_title">Enable location</string>
@@ -51,6 +54,11 @@
     <string name="favorites_empty_crypto">No cryptocurrencies in watchlist</string>
 
     <!-- Settings -->
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
     <string name="settings_section_markets">Markets</string>
     <string name="settings_currency">Currency</string>
     <string name="settings_section_notifications">Notifications</string>

@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -52,6 +53,7 @@ import com.example.newsfinance.ui.components.ArticleCard
 import com.example.newsfinance.ui.components.CryptoCard
 import com.example.newsfinance.ui.components.ErrorState
 import com.example.newsfinance.ui.components.LoadingState
+import com.example.newsfinance.ui.components.MarketSummaryCard
 import com.example.newsfinance.util.LocationHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -133,31 +135,25 @@ fun HomeScreen(
                         }
                     }
                     item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(R.string.home_latest_news),
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            uiState.detectedCountry?.let { detected ->
-                                AssistChip(
-                                    onClick = {},
-                                    label = { Text(detected.uppercase()) },
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Default.LocationOn,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(AssistChipDefaults.IconSize)
-                                        )
-                                    }
-                                )
-                            }
-                        }
+                        HomeHeader(detectedCountry = uiState.detectedCountry)
+                    }
+                    item {
+                        MarketSummaryCard(
+                            label = stringResource(R.string.home_market_summary),
+                            totalCap = uiState.marketTotalCap,
+                            avgChange = uiState.marketAvgChange,
+                            currency = uiState.currency,
+                            sparkline = uiState.marketSparkline,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
+                    item {
+                        Text(
+                            text = stringResource(R.string.home_latest_news),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                        )
                     }
                     items(
                         items = uiState.articles.take(5),
@@ -169,7 +165,8 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = stringResource(R.string.home_top_crypto),
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                     }
@@ -191,6 +188,44 @@ fun HomeScreen(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+    }
+}
+
+@Composable
+private fun HomeHeader(detectedCountry: String?) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.home_greeting),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = stringResource(R.string.home_dashboard_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold
+            )
+        }
+        // Niente avatar/login: in alto a destra mostriamo il paese geolocalizzato
+        detectedCountry?.let { detected ->
+            AssistChip(
+                onClick = {},
+                label = { Text(detected.uppercase()) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(AssistChipDefaults.IconSize)
+                    )
+                }
+            )
+        }
     }
 }
 

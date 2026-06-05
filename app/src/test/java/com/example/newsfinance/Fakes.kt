@@ -31,6 +31,8 @@ class FakeUserPreferencesDataStore(
         state.update { it.copy(updateIntervalMinutes = minutes) }
     override suspend fun updateLang(lang: String) =
         state.update { it.copy(preferredLang = lang) }
+    override suspend fun updateThemeMode(mode: String) =
+        state.update { it.copy(themeMode = mode) }
 }
 
 /** Servizio notizie che registra le chiamate e restituisce risposte configurabili. */
