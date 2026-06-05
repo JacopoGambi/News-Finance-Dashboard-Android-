@@ -44,6 +44,10 @@ val md_theme_dark_surfaceVariant = Color(0xFF42474E)
 val md_theme_dark_onSurfaceVariant = Color(0xFFC3C7CF)
 val md_theme_dark_outline = Color(0xFF8D9199)
 
-// Colori semantici crypto
+// Colori semantici crypto (light mode)
 val PositiveGreen = Color(0xFF2E7D32)
 val NegativeRed = Color(0xFFC62828)
+
+// Colori semantici crypto (dark mode — più chiari per contrasto su sfondo scuro)
+val PositiveGreenDark = Color(0xFF81C784)
+val NegativeRedDark = Color(0xFFEF9A9A)

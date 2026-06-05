@@ -17,11 +17,13 @@ import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -67,32 +69,39 @@ fun FavoritesScreen(
         )
     }
 
-    Column(modifier = modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = selectedTab) {
-            Tab(
-                selected = selectedTab == 0,
-                onClick = { selectedTab = 0 },
-                text = { Text(stringResource(R.string.favorites_tab_news)) }
-            )
-            Tab(
-                selected = selectedTab == 1,
-                onClick = { selectedTab = 1 },
-                text = { Text(stringResource(R.string.favorites_tab_crypto)) }
-            )
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(title = { Text(stringResource(R.string.nav_favorites)) })
         }
+    ) { innerPadding ->
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            TabRow(selectedTabIndex = selectedTab) {
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    text = { Text(stringResource(R.string.favorites_tab_news)) }
+                )
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    text = { Text(stringResource(R.string.favorites_tab_crypto)) }
+                )
+            }
 
-        when (selectedTab) {
-            0 -> ArticlesTab(
-                articles = uiState.favoriteArticles,
-                onRemove = viewModel::onRemoveArticle
-            )
-            1 -> CryptosTab(
-                cryptos = uiState.watchlistCryptos,
-                vsCurrency = uiState.preferredCurrency,
-                onRemove = viewModel::onRemoveCrypto,
-                onBellClick = { dialogCrypto = it },
-                onCryptoClick = onCryptoClick
-            )
+            when (selectedTab) {
+                0 -> ArticlesTab(
+                    articles = uiState.favoriteArticles,
+                    onRemove = viewModel::onRemoveArticle
+                )
+                1 -> CryptosTab(
+                    cryptos = uiState.watchlistCryptos,
+                    vsCurrency = uiState.preferredCurrency,
+                    onRemove = viewModel::onRemoveCrypto,
+                    onBellClick = { dialogCrypto = it },
+                    onCryptoClick = onCryptoClick
+                )
+            }
         }
     }
 }

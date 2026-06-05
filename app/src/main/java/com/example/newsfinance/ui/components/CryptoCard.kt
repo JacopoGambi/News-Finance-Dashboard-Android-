@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -19,8 +20,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -30,7 +32,9 @@ import coil.compose.AsyncImage
 import com.example.newsfinance.R
 import com.example.newsfinance.domain.model.Crypto
 import com.example.newsfinance.ui.theme.NegativeRed
+import com.example.newsfinance.ui.theme.NegativeRedDark
 import com.example.newsfinance.ui.theme.PositiveGreen
+import com.example.newsfinance.ui.theme.PositiveGreenDark
 import com.example.newsfinance.util.CurrencyFormatter
 import java.util.Locale
 
@@ -44,6 +48,8 @@ fun CryptoCard(
     onBellClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) {
+    val imageFallback = rememberVectorPainter(Icons.Default.BrokenImage)
+    val isDark = isSystemInDarkTheme()
     val cardModifier = modifier.fillMaxWidth()
     val cardElevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     val cardContent: @Composable () -> Unit = {
@@ -57,6 +63,8 @@ fun CryptoCard(
             AsyncImage(
                 model = crypto.imageUrl,
                 contentDescription = crypto.name,
+                placeholder = imageFallback,
+                error = imageFallback,
                 modifier = Modifier
                     .size(40.dp)
                     .clip(MaterialTheme.shapes.small),
@@ -85,10 +93,15 @@ fun CryptoCard(
                 val change = crypto.priceChangePercentage24h
                 if (change != null) {
                     val isPositive = change >= 0
+                    val changeColor = if (isPositive) {
+                        if (isDark) PositiveGreenDark else PositiveGreen
+                    } else {
+                        if (isDark) NegativeRedDark else NegativeRed
+                    }
                     Text(
                         text = "${if (isPositive) "+" else ""}${"%.2f".format(change)}%",
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (isPositive) PositiveGreen else NegativeRed
+                        color = changeColor
                     )
                 }
             }
@@ -106,7 +119,7 @@ fun CryptoCard(
                                     if (isWatchlisted) R.string.crypto_remove_watchlist
                                     else R.string.crypto_add_watchlist
                                 ),
-                                tint = if (isWatchlisted) Color(0xFFFFC107)
+                                tint = if (isWatchlisted) MaterialTheme.colorScheme.tertiary
                                        else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
