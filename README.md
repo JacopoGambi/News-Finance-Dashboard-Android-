@@ -156,7 +156,6 @@ Per consentire l'**avvio immediato dopo il clone** del repository, la chiave nec
 
 La risoluzione avviene in `app/build.gradle.kts` e le chiavi vengono esposte al codice tramite `BuildConfig`, senza alcun valore hardcodato nel sorgente. CoinGecko, nel tier gratuito, non richiede chiave.
 
-> La chiave GNews versionata appartiene al tier gratuito; serve esclusivamente a rendere il progetto eseguibile senza configurazione manuale.
 
 ---
 
@@ -166,15 +165,6 @@ La risoluzione avviene in `app/build.gradle.kts` e le chiavi vengono esposte al 
 - **DataStore Preferences** (`UserPreferencesDataStore`) memorizza le preferenze utente: tema, lingua, valuta, abilitazione notifiche e intervallo di aggiornamento.
 
 In entrambi i casi i dati persistiti vengono mappati verso i modelli di dominio prima di raggiungere i ViewModel.
-
----
-
-## Concorrenza e threading
-
-- Le chiamate di rete e le operazioni su database avvengono sempre su `Dispatchers.IO`.
-- I ViewModel lanciano le coroutine con `viewModelScope`, garantendo la cancellazione automatica al termine del ciclo di vita.
-- Il Main Thread non viene mai bloccato: i dati raggiungono l'UI tramite `StateFlow` raccolti con `collectAsStateWithLifecycle`.
-- Il worker di background esegue le operazioni pesanti fuori dal Main Thread.
 
 ---
 
