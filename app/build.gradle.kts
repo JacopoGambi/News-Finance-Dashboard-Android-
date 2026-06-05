@@ -14,6 +14,18 @@ val localProperties = Properties().apply {
     if (localFile.exists()) load(FileInputStream(localFile))
 }
 
+// Chiavi API committate (config/apikeys.properties), usate come fallback
+// quando la chiave non e' presente in local.properties.
+val apiKeyProperties = Properties().apply {
+    val apiKeysFile = rootProject.file("config/apikeys.properties")
+    if (apiKeysFile.exists()) load(FileInputStream(apiKeysFile))
+}
+
+fun resolveApiKey(name: String): String =
+    localProperties.getProperty(name)
+        ?: apiKeyProperties.getProperty(name)
+        ?: ""
+
 android {
     namespace = "com.example.newsfinance"
     compileSdk = 35
@@ -29,11 +41,11 @@ android {
 
         buildConfigField(
             "String", "GNEWS_API_KEY",
-            "\"${localProperties.getProperty("GNEWS_API_KEY") ?: ""}\""
+            "\"${resolveApiKey("GNEWS_API_KEY")}\""
         )
         buildConfigField(
             "String", "COINGECKO_API_KEY",
-            "\"${localProperties.getProperty("COINGECKO_API_KEY") ?: ""}\""
+            "\"${resolveApiKey("COINGECKO_API_KEY")}\""
         )
         buildConfigField("String", "GNEWS_API_BASE_URL",   "\"https://gnews.io/api/v4/\"")
         buildConfigField("String", "COINGECKO_BASE_URL",  "\"https://api.coingecko.com/api/v3/\"")
